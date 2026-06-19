@@ -1,4 +1,5 @@
-export function formatPrice(value: number): string {
+export function formatPrice(value: number | null): string {
+  if (value == null) return "—";
   return new Intl.NumberFormat("pt-PT", {
     style: "currency",
     currency: "EUR",
@@ -6,11 +7,7 @@ export function formatPrice(value: number): string {
   }).format(value);
 }
 
-export function formatArea(sqm: number): string {
+export function formatArea(sqm: number | null): string {
+  if (sqm == null) return "—";
   return `${sqm} m²`;
-}
-
-export function priceDropPercent(current: number, initial: number): number {
-  if (initial <= 0 || current >= initial) return 0;
-  return Math.round(((initial - current) / initial) * 100);
 }

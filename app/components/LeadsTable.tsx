@@ -3,15 +3,26 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lead } from "@/lib/types";
-import { formatArea, formatPrice, priceDropPercent } from "@/lib/format";
-import { ALL_PRIORITIES, ALL_STATUSES, uniqueTypologies, uniqueZones } from "@/lib/leads";
+import { formatArea, formatPrice } from "@/lib/format";
+import {
+  ALL_PRIORITIES,
+  ALL_STATUSES,
+  PRIORITY_LABELS,
+  STATUS_LABELS,
+  searchLeads,
+  uniqueTypologies,
+  uniqueZones,
+} from "@/lib/leads";
 import { PriorityBadge } from "./PriorityBadge";
 import { StatusBadge } from "./StatusBadge";
+import { scoreColor } from "@/lib/scoreColor";
+import { LeadSearch } from "./LeadSearch";
 
 const ALL = "Todas";
 
 export function LeadsTable({ leads }: { leads: Lead[] }) {
   const router = useRouter();
+  const [search, setSearch] = useState("");
   const [zone, setZone] = useState(ALL);
   const [priority, setPriority] = useState(ALL);
   const [status, setStatus] = useState(ALL);
@@ -21,16 +32,17 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
   const typologies = useMemo(() => uniqueTypologies(leads), [leads]);
 
   const filtered = useMemo(() => {
-    return leads
-      .filter((lead) => zone === ALL || lead.zone === zone)
+    return searchLeads(leads, search)
+      .filter((lead) => zone === ALL || lead.property.zone === zone)
       .filter((lead) => priority === ALL || lead.priority === priority)
       .filter((lead) => status === ALL || lead.status === status)
-      .filter((lead) => typology === ALL || lead.typology === typology)
+      .filter((lead) => typology === ALL || lead.property.typology === typology)
       .sort((a, b) => b.score - a.score);
-  }, [leads, zone, priority, status, typology]);
+  }, [leads, search, zone, priority, status, typology]);
 
   return (
     <div className="flex flex-col gap-4">
+      <LeadSearch value={search} onChange={setSearch} />
       <div className="flex flex-wrap gap-3">
         <Filter label="Zona" value={zone} onChange={setZone} options={zones} />
         <Filter
@@ -38,14 +50,16 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
           value={priority}
           onChange={setPriority}
           options={ALL_PRIORITIES}
+          labels={PRIORITY_LABELS}
         />
-        <Filter label="Estado" value={status} onChange={setStatus} options={ALL_STATUSES} />
         <Filter
-          label="Tipologia"
-          value={typology}
-          onChange={setTypology}
-          options={typologies}
+          label="Estado"
+          value={status}
+          onChange={setStatus}
+          options={ALL_STATUSES}
+          labels={STATUS_LABELS}
         />
+        <Filter label="Tipologia" value={typology} onChange={setTypology} options={typologies} />
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
@@ -64,7 +78,7 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
           </thead>
           <tbody className="divide-y divide-zinc-100">
             {filtered.map((lead) => {
-              const drop = priceDropPercent(lead.price_current, lead.price_initial);
+              const drop = lead.property.price_reduction_pct;
               return (
                 <tr
                   key={lead.id}
@@ -72,26 +86,34 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
                   className="cursor-pointer hover:bg-zinc-50"
                 >
                   <td className="px-4 py-3">
-                    <span className="font-medium text-zinc-900">{lead.zone}</span>
+                    <span className="font-medium text-zinc-900">{lead.property.zone}</span>
                     <span className="block text-xs text-zinc-500">
-                      {lead.seller_type === "particular" ? "Particular" : "Agência"}
+                      {lead.seller.type === "private"
+                        ? "Particular"
+                        : lead.seller.type === "agency"
+                          ? "Agência"
+                          : lead.seller.type === "promoter"
+                            ? "Promotor"
+                            : "Desconhecido"}
                     </span>
                   </td>
-                  <td className="px-4 py-3">{lead.typology}</td>
+                  <td className="px-4 py-3">{lead.property.typology}</td>
                   <td className="px-4 py-3">
-                    {formatPrice(lead.price_current)}
-                    {drop > 0 && (
+                    {formatPrice(lead.property.price_current)}
+                    {!!drop && drop > 0 && (
                       <span className="ml-1.5 text-xs font-medium text-emerald-600">
-                        -{drop}%
+                        -{Math.round(drop)}%
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3">{formatArea(lead.area_sqm)}</td>
-                  <td className="px-4 py-3">{lead.days_on_market}</td>
+                  <td className="px-4 py-3">{formatArea(lead.property.area_sqm)}</td>
+                  <td className="px-4 py-3">{lead.property.days_on_market ?? "—"}</td>
                   <td className="px-4 py-3">
                     <PriorityBadge priority={lead.priority} />
                   </td>
-                  <td className="px-4 py-3">{lead.score}</td>
+                  <td className={`px-4 py-3 font-semibold ${scoreColor(lead.score)}`}>
+                    {lead.score}
+                  </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={lead.status} />
                   </td>
@@ -112,16 +134,18 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
   );
 }
 
-function Filter({
+function Filter<T extends string>({
   label,
   value,
   onChange,
   options,
+  labels,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  options: string[];
+  options: T[];
+  labels?: Record<T, string>;
 }) {
   return (
     <label className="flex flex-col gap-1 text-xs font-medium text-zinc-600">
@@ -134,7 +158,7 @@ function Filter({
         <option value={ALL}>{ALL}</option>
         {options.map((option) => (
           <option key={option} value={option}>
-            {option}
+            {labels ? labels[option] : option}
           </option>
         ))}
       </select>
