@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx next *)",
+      "Skill(run)",
+      "Bash(curl -sf http://localhost:3000)",
+      "Bash(break)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000)",
+      "Bash(npx --yes playwright install chromium)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(lsof -nP -iTCP:3000 -sTCP:LISTEN)",
+      "Bash(ps -p 88464 -o pid,ppid,etime,command)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3001)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3002)",
+      "Bash(curl -s http://localhost:3002)",
+      "Bash(curl -s http://localhost:3001)"
+    ]
+  }
+}
