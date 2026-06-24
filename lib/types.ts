@@ -29,6 +29,8 @@ export interface Property {
   days_on_market: number | null;
   listing_url: string | null;
   published_date: string | null;
+  lat: number | null;
+  lng: number | null;
 }
 
 export interface Seller {

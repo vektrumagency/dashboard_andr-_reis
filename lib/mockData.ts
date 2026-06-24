@@ -28,6 +28,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 142,
       listing_url: "https://example.com/listing/qm-001",
       published_date: "2026-01-29",
+      lat: 38.7143,
+      lng: -9.4556,
     },
     seller: {
       type: "private",
@@ -86,6 +88,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 18,
       listing_url: "https://example.com/listing/qm-002",
       published_date: "2026-06-01",
+      lat: 38.7108,
+      lng: -9.4511,
     },
     seller: {
       type: "agency",
@@ -133,6 +137,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 96,
       listing_url: "https://example.com/listing/br-001",
       published_date: "2026-03-15",
+      lat: 38.7071,
+      lng: -9.4442,
     },
     seller: {
       type: "private",
@@ -182,6 +188,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 64,
       listing_url: "https://example.com/listing/br-002",
       published_date: "2026-04-16",
+      lat: 38.7036,
+      lng: -9.4397,
     },
     seller: {
       type: "agency",
@@ -230,6 +238,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 7,
       listing_url: "https://example.com/listing/gc-001",
       published_date: "2026-06-12",
+      lat: 38.7340,
+      lng: -9.4777,
     },
     seller: {
       type: "private",
@@ -275,6 +285,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 210,
       listing_url: "https://example.com/listing/gc-002",
       published_date: "2025-11-23",
+      lat: 38.7305,
+      lng: -9.4732,
     },
     seller: {
       type: "agency",
@@ -324,6 +336,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 118,
       listing_url: "https://example.com/listing/me-001",
       published_date: "2026-02-21",
+      lat: 38.7057,
+      lng: -9.4126,
     },
     seller: {
       type: "private",
@@ -372,6 +386,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 22,
       listing_url: "https://example.com/listing/me-002",
       published_date: "2026-05-28",
+      lat: 38.7022,
+      lng: -9.4081,
     },
     seller: {
       type: "agency",
@@ -417,6 +433,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 75,
       listing_url: "https://example.com/listing/cc-001",
       published_date: "2026-04-05",
+      lat: 38.6983,
+      lng: -9.4235,
     },
     seller: {
       type: "private",
@@ -465,6 +483,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 45,
       listing_url: "https://example.com/listing/cc-002",
       published_date: "2026-05-05",
+      lat: 38.6948,
+      lng: -9.4190,
     },
     seller: {
       type: "agency",
@@ -513,6 +533,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 12,
       listing_url: "https://example.com/listing/es-001",
       published_date: "2026-06-07",
+      lat: 38.7059,
+      lng: -9.3998,
     },
     seller: {
       type: "private",
@@ -558,6 +580,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 264,
       listing_url: "https://example.com/listing/es-002",
       published_date: "2025-09-29",
+      lat: 38.7024,
+      lng: -9.3953,
     },
     seller: {
       type: "private",
@@ -607,6 +631,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 5,
       listing_url: "https://example.com/listing/es-003",
       published_date: "2026-06-14",
+      lat: 38.7052,
+      lng: -9.3948,
     },
     seller: {
       type: "agency",
@@ -652,6 +678,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 30,
       listing_url: "https://example.com/listing/qm-003",
       published_date: "2026-05-20",
+      lat: 38.7136,
+      lng: -9.4506,
     },
     seller: {
       type: "agency",
@@ -696,6 +724,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 88,
       listing_url: "https://example.com/listing/br-003",
       published_date: "2026-03-23",
+      lat: 38.7064,
+      lng: -9.4392,
     },
     seller: {
       type: "private",
@@ -744,6 +774,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 50,
       listing_url: "https://example.com/listing/gc-003",
       published_date: "2026-04-30",
+      lat: 38.7333,
+      lng: -9.4727,
     },
     seller: {
       type: "private",
@@ -789,6 +821,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 175,
       listing_url: "https://example.com/listing/me-003",
       published_date: "2025-12-23",
+      lat: 38.7050,
+      lng: -9.4076,
     },
     seller: {
       type: "agency",
@@ -837,6 +871,8 @@ export const mockLeads: Lead[] = [
       days_on_market: 9,
       listing_url: "https://example.com/listing/cc-003",
       published_date: "2026-06-10",
+      lat: 38.6976,
+      lng: -9.4185,
     },
     seller: {
       type: "private",
