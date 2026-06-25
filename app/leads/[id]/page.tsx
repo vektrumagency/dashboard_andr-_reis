@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { mockLeads } from "@/lib/mockData";
 import { adjacentLeadIds } from "@/lib/leads";
-import { LeadCard } from "@/app/components/LeadCard";
+import { LiveLeadCard } from "@/app/components/LiveLeadCard";
 import { LeadPageNav } from "@/app/components/LeadPageNav";
 
 export default async function LeadDetailPage({
@@ -28,7 +28,7 @@ export default async function LeadDetailPage({
           </Link>
           <LeadPageNav prevId={prevId} nextId={nextId} />
         </div>
-        <LeadCard lead={lead} />
+        <LiveLeadCard lead={lead} />
       </div>
     </main>
   );

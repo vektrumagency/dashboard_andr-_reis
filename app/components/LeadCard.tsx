@@ -58,7 +58,7 @@ export function LeadCard({ lead }: { lead: Lead }) {
       <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:divide-x lg:divide-zinc-200">
         <div className="flex flex-col">
           <div className="px-6 py-5">
-            <LeadStageBar status={lead.status} />
+            <LeadStageBar leadId={lead.id} status={lead.status} />
           </div>
 
           <div className="grid grid-cols-2 gap-3 px-6 pb-5">

@@ -1,10 +1,19 @@
+"use client";
+
+import { useMemo } from "react";
 import { OutreachQueue } from "@/app/components/OutreachQueue";
-import { mockLeads } from "@/lib/mockData";
+import { useLeads } from "@/lib/leadsStore";
 
 export default function OutreachPage() {
-  const queue = mockLeads
-    .filter((lead) => lead.priority === "high" && (lead.status === "new" || lead.status === "saved"))
-    .sort((a, b) => b.score - a.score);
+  const { leads } = useLeads();
+
+  const queue = useMemo(
+    () =>
+      leads
+        .filter((lead) => lead.priority === "high" && (lead.status === "new" || lead.status === "saved"))
+        .sort((a, b) => b.score - a.score),
+    [leads],
+  );
 
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-6 py-10">

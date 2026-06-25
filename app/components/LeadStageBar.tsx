@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import { Lead } from "@/lib/types";
 import { STATUS_LABELS } from "@/lib/leads";
+import { useLeads } from "@/lib/leadsStore";
 
 const STAGES: Lead["status"][] = ["new", "saved", "contacted", "visit"];
 
-export function LeadStageBar({ status }: { status: Lead["status"] }) {
-  const [currentStatus, setCurrentStatus] = useState(status);
+export function LeadStageBar({ leadId, status }: { leadId: string; status: Lead["status"] }) {
+  const { updateStatus } = useLeads();
 
-  if (currentStatus === "not_relevant") {
+  if (status === "not_relevant") {
     return (
       <span className="inline-flex items-center rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium uppercase tracking-wide text-zinc-600">
         Não relevante
@@ -17,7 +17,7 @@ export function LeadStageBar({ status }: { status: Lead["status"] }) {
     );
   }
 
-  const stageIndex = STAGES.indexOf(currentStatus);
+  const stageIndex = STAGES.indexOf(status);
 
   return (
     <div className="grid grid-cols-4 gap-2">
@@ -25,7 +25,7 @@ export function LeadStageBar({ status }: { status: Lead["status"] }) {
         <button
           key={stage}
           type="button"
-          onClick={() => setCurrentStatus(stage)}
+          onClick={() => updateStatus(leadId, stage)}
           aria-label={`Marcar como ${STATUS_LABELS[stage]}`}
           className="flex flex-col gap-1.5 text-left"
         >

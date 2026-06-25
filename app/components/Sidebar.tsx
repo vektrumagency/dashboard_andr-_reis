@@ -3,27 +3,26 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ALL_STATUSES, STATUS_LABELS } from "@/lib/leads";
-import { LeadStatus } from "@/lib/types";
+import { useLeads } from "@/lib/leadsStore";
 
 const NAV_ITEMS = [
   { href: "/mapa", label: "Mapa", icon: "▲" },
   { href: "/outreach", label: "Outreach", icon: "✉" },
 ];
 
-export function Sidebar({
-  totalLeads,
-  statusCounts,
-}: {
-  totalLeads: number;
-  statusCounts: Record<LeadStatus, number>;
-}) {
+export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { leads } = useLeads();
   const onLeadsPage = pathname === "/";
   const activeStatus = onLeadsPage ? searchParams.get("status") : null;
 
   if (pathname === "/login") return null;
+
+  const statusCounts = Object.fromEntries(
+    ALL_STATUSES.map((status) => [status, leads.filter((lead) => lead.status === status).length]),
+  ) as Record<(typeof ALL_STATUSES)[number], number>;
 
   return (
     <aside className="flex w-56 shrink-0 flex-col bg-zinc-950 px-4 py-6 text-zinc-300">
@@ -43,7 +42,7 @@ export function Sidebar({
         >
           <span className="font-mono text-xs text-zinc-500">◆</span>
           Leads
-          <span className="ml-auto font-mono text-xs text-zinc-500">{totalLeads}</span>
+          <span className="ml-auto font-mono text-xs text-zinc-500">{leads.length}</span>
         </Link>
 
         <div className="ml-6 flex flex-col gap-0.5 border-l border-zinc-800 pl-3">
