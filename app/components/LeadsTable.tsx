@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Lead } from "@/lib/types";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Lead, LeadStatus } from "@/lib/types";
 import { formatArea, formatPrice } from "@/lib/format";
 import {
   ALL_PRIORITIES,
@@ -20,13 +20,22 @@ import { LeadSearch } from "./LeadSearch";
 
 const ALL = "Todas";
 
+function statusFromParam(value: string | null): string {
+  return ALL_STATUSES.includes(value as LeadStatus) ? (value as LeadStatus) : ALL;
+}
+
 export function LeadsTable({ leads }: { leads: Lead[] }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [zone, setZone] = useState(ALL);
   const [priority, setPriority] = useState(ALL);
-  const [status, setStatus] = useState(ALL);
+  const [status, setStatus] = useState(() => statusFromParam(searchParams.get("status")));
   const [typology, setTypology] = useState(ALL);
+
+  useEffect(() => {
+    setStatus(statusFromParam(searchParams.get("status")));
+  }, [searchParams]);
 
   const zones = useMemo(() => uniqueZones(leads), [leads]);
   const typologies = useMemo(() => uniqueTypologies(leads), [leads]);

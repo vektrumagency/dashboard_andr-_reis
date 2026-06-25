@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { LeadsTable } from "@/app/components/LeadsTable";
 import { mockLeads } from "@/lib/mockData";
 
@@ -10,7 +11,9 @@ export default function LeadsPage() {
           {mockLeads.length} leads em Cascais · ordenados por score
         </p>
       </div>
-      <LeadsTable leads={mockLeads} />
+      <Suspense fallback={null}>
+        <LeadsTable leads={mockLeads} />
+      </Suspense>
     </main>
   );
 }
