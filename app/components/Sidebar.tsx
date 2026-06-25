@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ALL_STATUSES, STATUS_LABELS } from "@/lib/leads";
 import { LeadStatus } from "@/lib/types";
 
@@ -18,9 +18,12 @@ export function Sidebar({
   statusCounts: Record<LeadStatus, number>;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const onLeadsPage = pathname === "/";
   const activeStatus = onLeadsPage ? searchParams.get("status") : null;
+
+  if (pathname === "/login") return null;
 
   return (
     <aside className="flex w-56 shrink-0 flex-col bg-zinc-950 px-4 py-6 text-zinc-300">
@@ -81,7 +84,18 @@ export function Sidebar({
         })}
       </nav>
 
-      <div className="mt-auto px-2 pt-6 text-xs text-zinc-600">
+      <div className="mt-auto flex flex-col gap-3 px-2 pt-6 text-xs text-zinc-600">
+        <button
+          type="button"
+          onClick={async () => {
+            await fetch("/api/logout", { method: "POST" });
+            router.replace("/login");
+            router.refresh();
+          }}
+          className="self-start text-zinc-500 hover:text-zinc-300"
+        >
+          Sair
+        </button>
         <p>Cascais · mock data</p>
       </div>
     </aside>
