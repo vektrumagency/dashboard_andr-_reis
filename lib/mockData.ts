@@ -30,6 +30,7 @@ export const mockLeads: Lead[] = [
       published_date: "2026-01-29",
       lat: 38.7143,
       lng: -9.4556,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=12259", "https://loremflickr.com/960/640/house,realestate?lock=12260", "https://loremflickr.com/960/640/house,realestate?lock=12261", "https://loremflickr.com/960/640/house,realestate?lock=12262"],
     },
     seller: {
       type: "private",
@@ -90,6 +91,7 @@ export const mockLeads: Lead[] = [
       published_date: "2026-06-01",
       lat: 38.7108,
       lng: -9.4511,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=13220", "https://loremflickr.com/960/640/house,realestate?lock=13221", "https://loremflickr.com/960/640/house,realestate?lock=13222", "https://loremflickr.com/960/640/house,realestate?lock=13223"],
     },
     seller: {
       type: "agency",
@@ -139,6 +141,7 @@ export const mockLeads: Lead[] = [
       published_date: "2026-03-15",
       lat: 38.7071,
       lng: -9.4442,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=12119", "https://loremflickr.com/960/640/house,realestate?lock=12120", "https://loremflickr.com/960/640/house,realestate?lock=12121", "https://loremflickr.com/960/640/house,realestate?lock=12122"],
     },
     seller: {
       type: "private",
@@ -190,6 +193,7 @@ export const mockLeads: Lead[] = [
       published_date: "2026-04-16",
       lat: 38.7036,
       lng: -9.4397,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=13080", "https://loremflickr.com/960/640/house,realestate?lock=13081", "https://loremflickr.com/960/640/house,realestate?lock=13082", "https://loremflickr.com/960/640/house,realestate?lock=13083"],
     },
     seller: {
       type: "agency",
@@ -240,6 +244,7 @@ export const mockLeads: Lead[] = [
       published_date: "2026-06-12",
       lat: 38.7340,
       lng: -9.4777,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=75875", "https://loremflickr.com/960/640/house,realestate?lock=75876", "https://loremflickr.com/960/640/house,realestate?lock=75877", "https://loremflickr.com/960/640/house,realestate?lock=75878"],
     },
     seller: {
       type: "private",
@@ -287,6 +292,7 @@ export const mockLeads: Lead[] = [
       published_date: "2025-11-23",
       lat: 38.7305,
       lng: -9.4732,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=76836", "https://loremflickr.com/960/640/house,realestate?lock=76837", "https://loremflickr.com/960/640/house,realestate?lock=76838", "https://loremflickr.com/960/640/house,realestate?lock=76839"],
     },
     seller: {
       type: "agency",
@@ -338,6 +344,7 @@ export const mockLeads: Lead[] = [
       published_date: "2026-02-21",
       lat: 38.7057,
       lng: -9.4126,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=43359", "https://loremflickr.com/960/640/house,realestate?lock=43360", "https://loremflickr.com/960/640/house,realestate?lock=43361", "https://loremflickr.com/960/640/house,realestate?lock=43362"],
     },
     seller: {
       type: "private",
@@ -388,6 +395,7 @@ export const mockLeads: Lead[] = [
       published_date: "2026-05-28",
       lat: 38.7022,
       lng: -9.4081,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=44320", "https://loremflickr.com/960/640/house,realestate?lock=44321", "https://loremflickr.com/960/640/house,realestate?lock=44322", "https://loremflickr.com/960/640/house,realestate?lock=44323"],
     },
     seller: {
       type: "agency",
@@ -435,6 +443,7 @@ export const mockLeads: Lead[] = [
       published_date: "2026-04-05",
       lat: 38.6983,
       lng: -9.4235,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=69127", "https://loremflickr.com/960/640/house,realestate?lock=69128", "https://loremflickr.com/960/640/house,realestate?lock=69129", "https://loremflickr.com/960/640/house,realestate?lock=69130"],
     },
     seller: {
       type: "private",
@@ -485,6 +494,7 @@ export const mockLeads: Lead[] = [
       published_date: "2026-05-05",
       lat: 38.6948,
       lng: -9.4190,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=70088", "https://loremflickr.com/960/640/house,realestate?lock=70089", "https://loremflickr.com/960/640/house,realestate?lock=70090", "https://loremflickr.com/960/640/house,realestate?lock=70091"],
     },
     seller: {
       type: "agency",
@@ -535,6 +545,7 @@ export const mockLeads: Lead[] = [
       published_date: "2026-06-07",
       lat: 38.7059,
       lng: -9.3998,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=12213", "https://loremflickr.com/960/640/house,realestate?lock=12214", "https://loremflickr.com/960/640/house,realestate?lock=12215", "https://loremflickr.com/960/640/house,realestate?lock=12216"],
     },
     seller: {
       type: "private",
@@ -582,6 +593,7 @@ export const mockLeads: Lead[] = [
       published_date: "2025-09-29",
       lat: 38.7024,
       lng: -9.3953,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=13174", "https://loremflickr.com/960/640/house,realestate?lock=13175", "https://loremflickr.com/960/640/house,realestate?lock=13176", "https://loremflickr.com/960/640/house,realestate?lock=13177"],
     },
     seller: {
       type: "private",
@@ -633,6 +645,7 @@ export const mockLeads: Lead[] = [
       published_date: "2026-06-14",
       lat: 38.7052,
       lng: -9.3948,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=14135", "https://loremflickr.com/960/640/house,realestate?lock=14136", "https://loremflickr.com/960/640/house,realestate?lock=14137", "https://loremflickr.com/960/640/house,realestate?lock=14138"],
     },
     seller: {
       type: "agency",
@@ -680,6 +693,7 @@ export const mockLeads: Lead[] = [
       published_date: "2026-05-20",
       lat: 38.7136,
       lng: -9.4506,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=14181", "https://loremflickr.com/960/640/house,realestate?lock=14182", "https://loremflickr.com/960/640/house,realestate?lock=14183", "https://loremflickr.com/960/640/house,realestate?lock=14184"],
     },
     seller: {
       type: "agency",
@@ -726,6 +740,7 @@ export const mockLeads: Lead[] = [
       published_date: "2026-03-23",
       lat: 38.7064,
       lng: -9.4392,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=14041", "https://loremflickr.com/960/640/house,realestate?lock=14042", "https://loremflickr.com/960/640/house,realestate?lock=14043", "https://loremflickr.com/960/640/house,realestate?lock=14044"],
     },
     seller: {
       type: "private",
@@ -776,6 +791,7 @@ export const mockLeads: Lead[] = [
       published_date: "2026-04-30",
       lat: 38.7333,
       lng: -9.4727,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=77797", "https://loremflickr.com/960/640/house,realestate?lock=77798", "https://loremflickr.com/960/640/house,realestate?lock=77799", "https://loremflickr.com/960/640/house,realestate?lock=77800"],
     },
     seller: {
       type: "private",
@@ -823,6 +839,7 @@ export const mockLeads: Lead[] = [
       published_date: "2025-12-23",
       lat: 38.7050,
       lng: -9.4076,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=45281", "https://loremflickr.com/960/640/house,realestate?lock=45282", "https://loremflickr.com/960/640/house,realestate?lock=45283", "https://loremflickr.com/960/640/house,realestate?lock=45284"],
     },
     seller: {
       type: "agency",
@@ -873,6 +890,7 @@ export const mockLeads: Lead[] = [
       published_date: "2026-06-10",
       lat: 38.6976,
       lng: -9.4185,
+      images: ["https://loremflickr.com/960/640/house,realestate?lock=71049", "https://loremflickr.com/960/640/house,realestate?lock=71050", "https://loremflickr.com/960/640/house,realestate?lock=71051", "https://loremflickr.com/960/640/house,realestate?lock=71052"],
     },
     seller: {
       type: "private",

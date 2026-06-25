@@ -31,6 +31,7 @@ export interface Property {
   published_date: string | null;
   lat: number | null;
   lng: number | null;
+  images: string[];
 }
 
 export interface Seller {

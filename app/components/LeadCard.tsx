@@ -7,6 +7,7 @@ import { scoreColor } from "@/lib/scoreColor";
 import { isNegativeSignal } from "@/lib/signals";
 import { CopyButton } from "./CopyButton";
 import { LeadStageBar } from "./LeadStageBar";
+import { PhotoCarousel } from "./PhotoCarousel";
 
 const SELLER_LABELS: Record<Lead["seller"]["type"], string> = {
   private: "Particular",
@@ -25,6 +26,8 @@ export function LeadCard({ lead }: { lead: Lead }) {
     <div
       className={`relative w-full overflow-hidden rounded-2xl border border-zinc-200 bg-white text-zinc-900 ring-1 ${accent.ring} ${accent.glow}`}
     >
+      <PhotoCarousel images={property.images} alt={property.title ?? `${property.zone} · ${property.typology}`} />
+
       <div className="flex items-start justify-between gap-4 border-b border-zinc-200 px-6 py-5">
         <div className="flex items-center gap-4">
           <div
