@@ -2,7 +2,6 @@ import { Lead, LeadPriority, LeadStatus } from "./types";
 
 export const STATUS_LABELS: Record<LeadStatus, string> = {
   new: "Novo",
-  saved: "Guardado",
   contacted: "Contactado",
   visit: "Visita",
   not_relevant: "Não relevante",
@@ -15,7 +14,7 @@ export const PRIORITY_LABELS: Record<LeadPriority, string> = {
   exclude: "Excluído",
 };
 
-export const ALL_STATUSES: LeadStatus[] = ["new", "saved", "contacted", "visit", "not_relevant"];
+export const ALL_STATUSES: LeadStatus[] = ["new", "contacted", "visit", "not_relevant"];
 
 export const ALL_PRIORITIES: LeadPriority[] = ["high", "medium", "low", "exclude"];
 

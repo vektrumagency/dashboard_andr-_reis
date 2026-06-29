@@ -6,7 +6,7 @@
 
 export type MarketId = "cascais" | "alges_arredores";
 
-export type LeadStatus = "new" | "saved" | "contacted" | "visit" | "not_relevant";
+export type LeadStatus = "new" | "contacted" | "visit" | "not_relevant";
 
 export type LeadPriority = "high" | "medium" | "low" | "exclude";
 
@@ -26,6 +26,7 @@ export interface Property {
   price_reduction_pct: number | null;
   area_sqm: number | null;
   price_per_sqm: number | null;
+  furnished: boolean | null;
   days_on_market: number | null;
   listing_url: string | null;
   published_date: string | null;

@@ -7,7 +7,7 @@ import { useLeads } from "@/lib/leadsStore";
 
 const NAV_ITEMS = [
   { href: "/mapa", label: "Mapa", icon: "▲" },
-  { href: "/outreach", label: "Outreach", icon: "✉" },
+  { href: "/atacar", label: "Atacar", icon: "✉" },
 ];
 
 export function Sidebar() {
@@ -23,6 +23,8 @@ export function Sidebar() {
   const statusCounts = Object.fromEntries(
     ALL_STATUSES.map((status) => [status, leads.filter((lead) => lead.status === status).length]),
   ) as Record<(typeof ALL_STATUSES)[number], number>;
+  const pendingCount = statusCounts.new;
+  const decidedStatuses = ALL_STATUSES.filter((status) => status !== "new");
 
   return (
     <aside className="flex w-56 shrink-0 flex-col bg-zinc-950 px-4 py-6 text-zinc-300">
@@ -42,11 +44,11 @@ export function Sidebar() {
         >
           <span className="font-mono text-xs text-zinc-500">◆</span>
           Leads
-          <span className="ml-auto font-mono text-xs text-zinc-500">{leads.length}</span>
+          <span className="ml-auto font-mono text-xs text-zinc-500">{pendingCount}</span>
         </Link>
 
         <div className="ml-6 flex flex-col gap-0.5 border-l border-zinc-800 pl-3">
-          {ALL_STATUSES.map((status) => (
+          {decidedStatuses.map((status) => (
             <Link
               key={status}
               href={`/?status=${status}`}

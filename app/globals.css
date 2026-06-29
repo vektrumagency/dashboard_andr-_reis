@@ -4,3 +4,47 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
+
+@keyframes modal-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-content-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-backdrop-enter {
+  animation: modal-backdrop-in 0.2s ease-out;
+}
+
+.modal-content-enter {
+  animation: modal-content-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes lead-card-exit {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.92) translateY(-24px);
+  }
+}
+
+.lead-card-exit {
+  animation: lead-card-exit 0.25s ease-in forwards;
+  pointer-events: none;
+}

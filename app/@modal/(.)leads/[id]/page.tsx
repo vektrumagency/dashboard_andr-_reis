@@ -20,7 +20,7 @@ export default async function LeadModalPage({
 
   return (
     <LeadModal prevId={prevId} nextId={nextId}>
-      <LiveLeadCard lead={lead} />
+      <LiveLeadCard lead={lead} nextId={nextId} />
     </LeadModal>
   );
 }

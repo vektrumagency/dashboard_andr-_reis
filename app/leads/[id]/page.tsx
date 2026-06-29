@@ -21,14 +21,14 @@ export default async function LeadDetailPage({
 
   return (
     <main className="min-h-full bg-zinc-50 px-4 py-10">
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-4">
+      <div className="modal-content-enter mx-auto flex w-full max-w-4xl flex-col gap-4">
         <div className="flex items-center justify-between gap-4">
           <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-900">
             ← Voltar à tabela de leads
           </Link>
           <LeadPageNav prevId={prevId} nextId={nextId} />
         </div>
-        <LiveLeadCard lead={lead} />
+        <LiveLeadCard lead={lead} nextId={nextId} />
       </div>
     </main>
   );

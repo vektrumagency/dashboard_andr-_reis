@@ -27,10 +27,13 @@ export function LeadModal({
   return (
     <>
       <div
-        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 py-10 backdrop-blur-sm"
+        className="modal-backdrop-enter fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 py-10 backdrop-blur-sm"
         onClick={() => router.back()}
       >
-        <div className="relative w-full max-w-4xl" onClick={(event) => event.stopPropagation()}>
+        <div
+          className="modal-content-enter relative w-full max-w-4xl"
+          onClick={(event) => event.stopPropagation()}
+        >
           <button
             type="button"
             onClick={() => router.back()}

@@ -8,7 +8,6 @@ import {
   ALL_PRIORITIES,
   ALL_STATUSES,
   PRIORITY_LABELS,
-  STATUS_LABELS,
   searchLeads,
   uniqueTypologies,
   uniqueZones,
@@ -20,8 +19,11 @@ import { LeadSearch } from "./LeadSearch";
 
 const ALL = "Todas";
 
+const GRID_COLS = "grid-cols-[1.4fr_0.8fr_1fr_0.8fr_1fr_0.9fr_0.6fr_0.9fr]";
+
 function statusFromParam(value: string | null): string {
-  return ALL_STATUSES.includes(value as LeadStatus) ? (value as LeadStatus) : ALL;
+  if (value && ALL_STATUSES.includes(value as LeadStatus)) return value;
+  return "new";
 }
 
 export function LeadsTable({ leads }: { leads: Lead[] }) {
@@ -61,40 +63,34 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
           options={ALL_PRIORITIES}
           labels={PRIORITY_LABELS}
         />
-        <Filter
-          label="Estado"
-          value={status}
-          onChange={setStatus}
-          options={ALL_STATUSES}
-          labels={STATUS_LABELS}
-        />
         <Filter label="Tipologia" value={typology} onChange={setTypology} options={typologies} />
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
-        <table className="min-w-full divide-y divide-zinc-200 text-sm">
-          <thead className="bg-zinc-50 text-left text-xs font-medium uppercase tracking-wide text-zinc-500">
-            <tr>
-              <th className="px-4 py-3">Zona</th>
-              <th className="px-4 py-3">Tipologia</th>
-              <th className="px-4 py-3">Preço</th>
-              <th className="px-4 py-3">Área</th>
-              <th className="px-4 py-3">Dias no mercado</th>
-              <th className="px-4 py-3">Prioridade</th>
-              <th className="px-4 py-3">Score</th>
-              <th className="px-4 py-3">Estado</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-100">
+      <div className="overflow-x-auto">
+        <div className="min-w-[860px]">
+          <div
+            className={`grid ${GRID_COLS} gap-2 px-4 py-2 text-left text-xs font-medium uppercase tracking-wide text-zinc-500`}
+          >
+            <span>Zona</span>
+            <span>Tipologia</span>
+            <span>Preço</span>
+            <span>Área</span>
+            <span>Dias no mercado</span>
+            <span>Prioridade</span>
+            <span>Score</span>
+            <span>Estado</span>
+          </div>
+
+          <div className="flex flex-col gap-2.5">
             {filtered.map((lead) => {
               const drop = lead.property.price_reduction_pct;
               return (
-                <tr
+                <div
                   key={lead.id}
                   onClick={() => router.push(`/leads/${lead.id}`)}
-                  className="cursor-pointer hover:bg-zinc-50"
+                  className={`grid ${GRID_COLS} items-center gap-2 rounded-full bg-zinc-100 px-6 py-3 text-sm text-zinc-900 cursor-pointer transition-transform hover:scale-[1.01]`}
                 >
-                  <td className="px-4 py-3">
+                  <div>
                     <span className="font-medium text-zinc-900">{lead.property.zone}</span>
                     <span className="block text-xs text-zinc-500">
                       {lead.seller.type === "private"
@@ -105,39 +101,35 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
                             ? "Promotor"
                             : "Desconhecido"}
                     </span>
-                  </td>
-                  <td className="px-4 py-3">{lead.property.typology}</td>
-                  <td className="px-4 py-3">
+                  </div>
+                  <div className="text-zinc-700">{lead.property.typology}</div>
+                  <div className="font-medium">
                     {formatPrice(lead.property.price_current)}
                     {!!drop && drop > 0 && (
-                      <span className="ml-1.5 text-xs font-medium text-emerald-600">
+                      <span className="ml-1.5 text-xs font-semibold text-emerald-600">
                         -{Math.round(drop)}%
                       </span>
                     )}
-                  </td>
-                  <td className="px-4 py-3">{formatArea(lead.property.area_sqm)}</td>
-                  <td className="px-4 py-3">{lead.property.days_on_market ?? "—"}</td>
-                  <td className="px-4 py-3">
+                  </div>
+                  <div className="text-zinc-700">{formatArea(lead.property.area_sqm)}</div>
+                  <div className="text-zinc-700">{lead.property.days_on_market ?? "—"}</div>
+                  <div>
                     <PriorityBadge priority={lead.priority} />
-                  </td>
-                  <td className={`px-4 py-3 font-semibold ${scoreColor(lead.score)}`}>
-                    {lead.score}
-                  </td>
-                  <td className="px-4 py-3">
+                  </div>
+                  <div className={`font-semibold ${scoreColor(lead.score)}`}>{lead.score}</div>
+                  <div>
                     <StatusBadge status={lead.status} />
-                  </td>
-                </tr>
+                  </div>
+                </div>
               );
             })}
             {filtered.length === 0 && (
-              <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-zinc-500">
-                  Nenhum lead corresponde aos filtros selecionados.
-                </td>
-              </tr>
+              <div className="rounded-lg border border-zinc-200 bg-white px-4 py-8 text-center text-sm text-zinc-500">
+                Nenhum lead corresponde aos filtros selecionados.
+              </div>
             )}
-          </tbody>
-        </table>
+          </div>
+        </div>
       </div>
     </div>
   );
