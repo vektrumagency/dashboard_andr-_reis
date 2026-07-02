@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Sidebar } from "@/app/components/Sidebar";
-import { mockLeads } from "@/lib/mockData";
+import { getLeads } from "@/lib/api";
 import { LeadsProvider } from "@/lib/leadsStore";
 import "./globals.css";
 
@@ -22,20 +22,22 @@ export const metadata: Metadata = {
   description: "Dashboard de geração e gestão de leads imobiliários",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
   modal,
 }: Readonly<{
   children: React.ReactNode;
   modal: React.ReactNode;
 }>) {
+  const leads = await getLeads();
+
   return (
     <html
       lang="pt-PT"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex h-full bg-zinc-50 text-zinc-900">
-        <LeadsProvider initialLeads={mockLeads}>
+        <LeadsProvider initialLeads={leads}>
           <Sidebar />
           <div className="flex-1 overflow-y-auto">{children}</div>
           {modal}

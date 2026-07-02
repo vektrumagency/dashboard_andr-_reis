@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { mockLeads } from "@/lib/mockData";
+import { getLeads } from "@/lib/api";
 import { adjacentLeadIds } from "@/lib/leads";
 import { LiveLeadCard } from "@/app/components/LiveLeadCard";
 import { LeadModal } from "@/app/components/LeadModal";
@@ -10,13 +10,14 @@ export default async function LeadModalPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const lead = mockLeads.find((item) => item.id === id);
+  const leads = await getLeads();
+  const lead = leads.find((item) => item.id === id);
 
   if (!lead) {
     notFound();
   }
 
-  const { prevId, nextId } = adjacentLeadIds(mockLeads, id);
+  const { prevId, nextId } = adjacentLeadIds(leads, id);
 
   return (
     <LeadModal prevId={prevId} nextId={nextId}>
