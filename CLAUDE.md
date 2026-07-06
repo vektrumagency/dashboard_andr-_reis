@@ -100,3 +100,39 @@ Dois mercados, ambos premium (preço médio ~€1M+):
   com a necessidade. Não sobre-arquitetar.
 - Idioma da interface: Português (Portugal).
 - Confirmar com o Luís antes de assumir nomes de campos ou endpoints da API.
+
+## Setup técnico
+
+```bash
+npm install
+```
+
+`.env.local` necessário:
+```
+DASHBOARD_PASSWORD=
+DASHBOARD_SESSION_SECRET=
+NEXT_PUBLIC_MAPBOX_TOKEN=
+```
+
+```bash
+npm run dev     # http://localhost:3000
+npm run build
+npm run start
+```
+
+## Ficheiros-chave
+
+| Ficheiro | Papel |
+|---|---|
+| `lib/types.ts` | Tipos TypeScript (Lead, Property, AINote, etc.) — alinhar com backend |
+| `lib/mockData.ts` | 18 leads fictícios para desenvolvimento |
+| `lib/leadsStore.tsx` | React context + persistência de status em localStorage |
+| `lib/auth.ts` | HMAC-SHA256 via Web Crypto API, sem biblioteca externa |
+| `proxy.ts` | Middleware Next.js — redireciona para /login se sem sessão |
+| `app/@modal` | Parallel route para modal overlay de `/leads/[id]` |
+
+## Notas de arquitetura
+
+- **Auth:** tokens HMAC-SHA256 em cookie httpOnly (30 dias). Rate limit em memória (8 tentativas / 5 min, resetado no restart).
+- **Modal UX:** `app/@modal/(.)leads/[id]` é um intercepting route — ao navegar da tabela abre modal; acesso direto por URL abre página completa.
+- **Score:** calculado pelo backend, nunca pelo frontend. Toda a ordenação usa `lead.score` descendente.

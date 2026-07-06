@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dashboard Andre — IAD Lead Management
 
-## Getting Started
+Password-protected frontend dashboard for a real estate lead management system. Displays AI-scored property listings from the Cascais premium market for a consultant to review, track, and act on.
 
-First, run the development server:
+**Views:** leads table, map with priority pins, outreach message queue.
+
+## Stack
+
+- Next.js 16 (App Router), React 19, TypeScript
+- Tailwind CSS 4, Mapbox GL 3
+- Web Crypto API for session auth (no third-party auth library)
+- Currently uses mock data — Supabase integration pending
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Create `.env.local`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+DASHBOARD_PASSWORD=your_password
+DASHBOARD_SESSION_SECRET=a_long_random_string
+NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ1...
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev    # http://localhost:3000
+npm run build
+npm run start
+```
 
-## Learn More
+## Routes
 
-To learn more about Next.js, take a look at the following resources:
+| Route | Description |
+|---|---|
+| `/` | Leads table (score-sorted, filterable) |
+| `/mapa` | Mapbox map with priority-colored pins |
+| `/atacar` | Outreach queue (high-priority leads only) |
+| `/leads/[id]` | Lead detail — modal from table, full page on direct URL |
+| `/login` | Password entry |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Architecture
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Mock data → Supabase migration path.** `lib/types.ts` is kept 1:1 with the Python backend Pydantic models. `lib/leadsStore.tsx` persists status overrides in localStorage. Swapping to live data only requires changing the data source in `LeadsProvider` — no type changes needed.
 
-## Deploy on Vercel
+**Parallel + intercepting routes for modal UX.** `/leads/[id]` from the table renders as a modal overlay (`@modal/(.)leads/[id]`); direct URL access renders the full page.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**No state management library.** Single React context (`LeadsProvider`) + component-local state. Appropriate for single-user scope.
