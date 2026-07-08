@@ -1,33 +1,33 @@
 import { cache } from "react";
+import { ObjectId } from "mongodb";
+import { getDb } from "./mongodb";
 import { Lead } from "./types";
 
-/**
- * Cliente server-side para a API do lead-researcher (FastAPI, projeto do
- * Luís). Nunca chamado do browser — mantém a URL do backend fora do bundle
- * do cliente e evita ter de configurar CORS no FastAPI (ver route handlers
- * em app/api/leads/[id] que fazem de proxy para as mutações).
- */
-const API_URL = process.env.LEAD_RESEARCHER_API_URL ?? "http://localhost:8000";
+const LEADS_COLLECTION = "leads";
 
 /**
- * O Property do backend ainda não tem lat/lng nem furnished, e usa
- * image_urls em vez de images — normalizamos aqui para o resto da app não
- * ter de saber da forma exata da API.
+ * O documento na Mongo usa _id (ObjectId), image_urls e latitude/longitude
+ * em vez de id, images e lat/lng. furnished não existe no backend do
+ * Luís — normalizamos aqui para o resto da app não ter de saber da forma
+ * exata do documento.
  */
 type RawProperty = Omit<Lead["property"], "images" | "furnished" | "lat" | "lng"> & {
   image_urls?: string[];
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
-type RawLead = Omit<Lead, "property"> & { property: RawProperty };
+type RawLead = Omit<Lead, "id" | "property"> & { _id: ObjectId; property: RawProperty };
 
 function normalizeLead(raw: RawLead): Lead {
   return {
     ...raw,
+    id: raw._id.toString(),
     property: {
       ...raw.property,
       furnished: null,
-      lat: null,
-      lng: null,
+      lat: raw.property.latitude ?? null,
+      lng: raw.property.longitude ?? null,
       images: raw.property.image_urls ?? [],
     },
   };
@@ -35,27 +35,23 @@ function normalizeLead(raw: RawLead): Lead {
 
 /**
  * cache() dedupe pedidos dentro do mesmo request/render — evita 3 chamadas
- * à API (layout + página do lead + modal interceptado) por navegação.
+ * à base de dados (layout + página do lead + modal interceptado) por navegação.
  */
 export const getLeads = cache(async (): Promise<Lead[]> => {
-  const res = await fetch(`${API_URL}/leads`, { cache: "no-store" });
-  if (!res.ok) {
-    throw new Error(`GET /leads falhou: ${res.status} ${res.statusText}`);
-  }
-  const raw: RawLead[] = await res.json();
+  const db = await getDb();
+  const raw = await db.collection<RawLead>(LEADS_COLLECTION).find().toArray();
   return raw.map(normalizeLead);
 });
 
 export async function updateLeadStatus(id: string, status: Lead["status"]): Promise<Lead> {
-  const res = await fetch(`${API_URL}/leads/${id}/status`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status }),
-    cache: "no-store",
-  });
-  if (!res.ok) {
-    throw new Error(`PATCH /leads/${id}/status falhou: ${res.status} ${res.statusText}`);
+  const db = await getDb();
+  const result = await db.collection<RawLead>(LEADS_COLLECTION).findOneAndUpdate(
+    { _id: new ObjectId(id) },
+    { $set: { status, updated_at: new Date().toISOString() } },
+    { returnDocument: "after" }
+  );
+  if (!result) {
+    throw new Error(`Lead ${id} não encontrado.`);
   }
-  const raw: RawLead = await res.json();
-  return normalizeLead(raw);
+  return normalizeLead(result);
 }
