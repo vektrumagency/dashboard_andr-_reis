@@ -15,7 +15,10 @@ const PIN_COLORS: Record<LeadPriority, string> = {
   exclude: "#a1a1aa",
 };
 
-const CASCAIS_CENTER: [number, number] = [-9.4215, 38.7042];
+// Centro por omissão (área Cascais/Algés) — só usado quando ainda não há
+// nenhum lead com lat/lng; assim que houver coordenadas reais, o mapa
+// ajusta-se sempre a elas em vez de ficar preso a este ponto fixo.
+const DEFAULT_CENTER: [number, number] = [-9.35, 38.705];
 
 export function LeadsMap({ leads }: { leads: Lead[] }) {
   const router = useRouter();
@@ -30,11 +33,12 @@ export function LeadsMap({ leads }: { leads: Lead[] }) {
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: "mapbox://styles/mapbox/satellite-streets-v12",
-      center: CASCAIS_CENTER,
+      center: DEFAULT_CENTER,
       zoom: 12.5,
     });
 
     const markers: mapboxgl.Marker[] = [];
+    const bounds = new mapboxgl.LngLatBounds();
 
     for (const lead of leads) {
       const { lat, lng } = lead.property;
@@ -54,6 +58,11 @@ export function LeadsMap({ leads }: { leads: Lead[] }) {
 
       const marker = new mapboxgl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
       markers.push(marker);
+      bounds.extend([lng, lat]);
+    }
+
+    if (!bounds.isEmpty()) {
+      map.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 0 });
     }
 
     return () => {

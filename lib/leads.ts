@@ -1,4 +1,4 @@
-import { Lead, LeadPriority, LeadStatus } from "./types";
+import { Lead, LeadPriority, LeadStatus, MarketId } from "./types";
 
 export const STATUS_LABELS: Record<LeadStatus, string> = {
   new: "Novo",
@@ -14,9 +14,23 @@ export const PRIORITY_LABELS: Record<LeadPriority, string> = {
   exclude: "Excluído",
 };
 
+export const MARKET_LABELS: Record<MarketId, string> = {
+  cascais: "Cascais",
+  alges_arredores: "Algés/Miraflores",
+};
+
 export const ALL_STATUSES: LeadStatus[] = ["new", "contacted", "visit", "not_relevant"];
 
 export const ALL_PRIORITIES: LeadPriority[] = ["high", "medium", "low", "exclude"];
+
+/** Nomes dos mercados presentes nos leads, para usar em texto ("N leads em X"). */
+export function marketsSummary(leads: Lead[]): string {
+  const present = Array.from(new Set(leads.map((lead) => lead.market)));
+  const labels = present.map((market) => MARKET_LABELS[market] ?? market);
+  if (labels.length === 0) return "";
+  if (labels.length === 1) return labels[0];
+  return `${labels.slice(0, -1).join(", ")} e ${labels[labels.length - 1]}`;
+}
 
 export function uniqueZones(leads: Lead[]): string[] {
   return Array.from(

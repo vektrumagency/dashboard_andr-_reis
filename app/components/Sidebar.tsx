@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ALL_STATUSES, STATUS_LABELS } from "@/lib/leads";
+import { ALL_STATUSES, STATUS_LABELS, marketsSummary } from "@/lib/leads";
 import { useLeads } from "@/lib/leadsStore";
 
 const NAV_ITEMS = [
@@ -97,7 +97,7 @@ export function Sidebar() {
         >
           Sair
         </button>
-        <p>Cascais · mock data</p>
+        <p>{marketsSummary(leads) || "Sem leads"}</p>
       </div>
     </aside>
   );

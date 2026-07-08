@@ -69,6 +69,18 @@ export interface Lead {
   seller: Seller;
   signals: string[];
   ai_note: AINote;
+  /**
+   * Mensagem de outreach personalizada gerada pelo agente (separada do
+   * ai_note "clássico"). Campos opcionais — leads antigos ou ainda por
+   * processar podem não os ter.
+   */
+  outreach_message?: string | null;
+  outreach_message_subject?: string | null;
+  outreach_angle?: string | null;
+  outreach_personalization_notes?: string | null;
+  outreach_message_generated_at?: string | null;
+  outreach_message_version?: number | null;
+  outreach_message_status?: string | null;
   manual_notes: string | null;
   price_history: PriceSnapshot[];
   created_at: string;

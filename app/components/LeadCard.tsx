@@ -8,7 +8,7 @@ import { PRIORITY_LABELS } from "@/lib/leads";
 import { zoneTier, zonePricePerSqm } from "@/lib/zones";
 import { priorityAccent } from "@/lib/priorityAccent";
 import { scoreColor } from "@/lib/scoreColor";
-import { isNegativeSignal } from "@/lib/signals";
+import { signalPolarity } from "@/lib/signals";
 import { useLeads } from "@/lib/leadsStore";
 import { LeadActionBar } from "./LeadActionBar";
 import { ContactChannel } from "./ContactChannel";
@@ -29,8 +29,9 @@ export function LeadCard({ lead, nextId = null }: { lead: Lead; nextId?: string 
   const [isExiting, setIsExiting] = useState(false);
   const accent = priorityAccent(lead.priority);
   const { property, seller, ai_note } = lead;
-  const negativeSignals = lead.signals.filter(isNegativeSignal);
-  const positiveSignals = lead.signals.filter((signal) => !isNegativeSignal(signal));
+  const positiveSignals = lead.signals.filter((signal) => signalPolarity(signal) === "positive");
+  const negativeSignals = lead.signals.filter((signal) => signalPolarity(signal) === "negative");
+  const neutralSignals = lead.signals.filter((signal) => signalPolarity(signal) === "neutral");
 
   function handleDecide(stage: Lead["status"]) {
     setIsExiting(true);
@@ -58,7 +59,8 @@ export function LeadCard({ lead, nextId = null }: { lead: Lead; nextId?: string 
           </div>
           <div>
             <p className="font-mono text-[11px] uppercase tracking-widest text-zinc-500">
-              Lead · {lead.id} · Tier {zoneTier(property.zone)}
+              Lead · {lead.id}
+              {zoneTier(property.zone) != null ? ` · Tier ${zoneTier(property.zone)}` : ""}
             </p>
             <h2 className="text-xl font-semibold text-zinc-900">
               {property.zone} · {property.typology}

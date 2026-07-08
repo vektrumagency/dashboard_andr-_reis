@@ -1,5 +1,6 @@
 import { LeadsMap } from "@/app/components/LeadsMap";
 import { getLeads } from "@/lib/api";
+import { marketsSummary } from "@/lib/leads";
 
 export default async function MapaPage() {
   const leads = await getLeads();
@@ -9,7 +10,7 @@ export default async function MapaPage() {
       <div>
         <h1 className="text-2xl font-semibold text-zinc-900">Mapa</h1>
         <p className="text-sm text-zinc-500">
-          {leads.length} leads em Cascais · pins coloridos por prioridade
+          {leads.length} leads em {marketsSummary(leads)} · pins coloridos por prioridade
         </p>
       </div>
       <LeadsMap leads={leads} />

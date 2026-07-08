@@ -20,3 +20,16 @@ export function formatPricePerSqm(value: number | null): string {
     maximumFractionDigits: 0,
   }).format(value) + "/m²";
 }
+
+export function formatDateTime(value: string | null | undefined): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("pt-PT", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}

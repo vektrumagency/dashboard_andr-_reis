@@ -22,9 +22,14 @@ const ZONE_PRICE_PER_SQM: Record<string, number> = {
   Estoril: 5000,
 };
 
-export function zoneTier(zone: string | null): 1 | 2 | 3 {
-  if (!zone) return 3;
-  return ZONE_TIERS[zone] ?? 3;
+/**
+ * Devolve null para zonas sem tier definido (ex: zonas de Algés/Miraflores,
+ * que ainda não têm classificação neste ficheiro) — nunca inventamos um
+ * tier para não sugerir uma classificação que não existe.
+ */
+export function zoneTier(zone: string | null): 1 | 2 | 3 | null {
+  if (!zone) return null;
+  return ZONE_TIERS[zone] ?? null;
 }
 
 export function zonePricePerSqm(zone: string | null): number | null {
