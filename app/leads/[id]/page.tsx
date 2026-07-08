@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { mockLeads } from "@/lib/mockData";
+import { getLeads } from "@/lib/api";
 import { adjacentLeadIds } from "@/lib/leads";
 import { LiveLeadCard } from "@/app/components/LiveLeadCard";
 import { LeadPageNav } from "@/app/components/LeadPageNav";
@@ -11,13 +11,14 @@ export default async function LeadDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const lead = mockLeads.find((item) => item.id === id);
+  const leads = await getLeads();
+  const lead = leads.find((item) => item.id === id);
 
   if (!lead) {
     notFound();
   }
 
-  const { prevId, nextId } = adjacentLeadIds(mockLeads, id);
+  const { prevId, nextId } = adjacentLeadIds(leads, id);
 
   return (
     <main className="min-h-full bg-zinc-50 px-4 py-10">

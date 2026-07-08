@@ -1,9 +1,7 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { Lead, LeadStatus } from "./types";
-
-const STORAGE_KEY = "andre-reis-dashboard:lead-status-overrides";
 
 type LeadsContextValue = {
   leads: Lead[];
@@ -12,12 +10,6 @@ type LeadsContextValue = {
 
 const LeadsContext = createContext<LeadsContextValue | null>(null);
 
-/**
- * Não há Supabase ainda — os estados editados localmente (André a mudar
- * Novo/Guardado/Contactado/Visita) ficam em localStorage em vez de se
- * perderem. Quando o Luís disponibilizar a base de dados, `updateStatus`
- * passa a chamar a API real e `initialLeads` passa a vir de lá.
- */
 export function LeadsProvider({
   initialLeads,
   children,
@@ -25,38 +17,32 @@ export function LeadsProvider({
   initialLeads: Lead[];
   children: React.ReactNode;
 }) {
-  const [overrides, setOverrides] = useState<Record<string, LeadStatus>>({});
+  const [leads, setLeads] = useState<Lead[]>(initialLeads);
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setOverrides(JSON.parse(stored));
-    } catch {
-      // localStorage indisponível ou corrompido — segue com os dados originais
-    }
+  const updateStatus = useCallback((id: string, status: LeadStatus) => {
+    let previous: Lead[] = [];
+    setLeads((current) => {
+      previous = current;
+      return current.map((lead) => (lead.id === id ? { ...lead, status } : lead));
+    });
+
+    fetch(`/api/leads/${id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`PATCH /api/leads/${id}/status falhou: ${res.status}`);
+      })
+      .catch((error) => {
+        console.error("Falha ao gravar estado do lead, a reverter:", error);
+        setLeads(previous);
+      });
   }, []);
 
-  const leads = useMemo(
-    () =>
-      initialLeads.map((lead) =>
-        overrides[lead.id] ? { ...lead, status: overrides[lead.id] } : lead,
-      ),
-    [initialLeads, overrides],
-  );
+  const value = useMemo(() => ({ leads, updateStatus }), [leads, updateStatus]);
 
-  function updateStatus(id: string, status: LeadStatus) {
-    setOverrides((prev) => {
-      const next = { ...prev, [id]: status };
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // ignora falha ao gravar
-      }
-      return next;
-    });
-  }
-
-  return <LeadsContext.Provider value={{ leads, updateStatus }}>{children}</LeadsContext.Provider>;
+  return <LeadsContext.Provider value={value}>{children}</LeadsContext.Provider>;
 }
 
 export function useLeads(): LeadsContextValue {
