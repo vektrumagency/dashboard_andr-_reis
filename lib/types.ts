@@ -33,6 +33,21 @@ export interface Property {
   lat: number | null;
   lng: number | null;
   images: string[];
+  /**
+   * Benchmark de mercado calculado e persistido pelo backend — o frontend
+   * só lê estes campos, nunca calcula o benchmark. Opcionais porque nem
+   * todos os leads têm este cálculo ainda.
+   */
+  market_reference_price_per_sqm?: number | null;
+  market_reference_zone?: string | null;
+  market_reference_basis?: string | null;
+  market_reference_confidence?: string | null;
+  market_reference_reasoning?: string | null;
+  comparable_context_used?: string[] | null;
+  price_vs_market_pct?: number | null;
+  price_vs_market_amount_per_sqm?: number | null;
+  price_market_position?: string | null;
+  price_market_commentary?: string | null;
 }
 
 export interface Seller {

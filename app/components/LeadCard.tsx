@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lead } from "@/lib/types";
-import { formatArea, formatPrice, formatPricePerSqm } from "@/lib/format";
-import { PRIORITY_LABELS } from "@/lib/leads";
-import { zoneTier, zonePricePerSqm } from "@/lib/zones";
+import { Lead, Property } from "@/lib/types";
+import {
+  formatArea,
+  formatPrice,
+  formatPricePerSqm,
+  formatSignedEuroPerSqm,
+  formatSignedPercent,
+} from "@/lib/format";
+import { PRIORITY_LABELS, formatMarketConfidence, formatMarketPosition } from "@/lib/leads";
+import { zoneTier } from "@/lib/zones";
 import { priorityAccent } from "@/lib/priorityAccent";
 import { scoreColor } from "@/lib/scoreColor";
 import { signalPolarity } from "@/lib/signals";
@@ -92,10 +98,7 @@ export function LeadCard({ lead, nextId = null }: { lead: Lead; nextId?: string 
             <Stat label="Área" value={formatArea(property.area_sqm)} />
             <Stat label="Dias no mercado" value={String(property.days_on_market ?? "—")} />
             <div className="col-span-2">
-              <PricePerSqmComparison
-                propertyPricePerSqm={property.price_per_sqm}
-                zonePricePerSqm={zonePricePerSqm(property.zone)}
-              />
+              <PricePerSqmComparison property={property} />
             </div>
             <div className="col-span-2">
               <FurnishedTag furnished={property.furnished} />
@@ -214,20 +217,26 @@ function Note({ label, text }: { label: string; text: string }) {
   );
 }
 
-function PricePerSqmComparison({
-  propertyPricePerSqm,
-  zonePricePerSqm,
-}: {
-  propertyPricePerSqm: number | null;
-  zonePricePerSqm: number | null;
-}) {
-  const delta =
-    propertyPricePerSqm != null && zonePricePerSqm != null
-      ? Math.round(((propertyPricePerSqm - zonePricePerSqm) / zonePricePerSqm) * 100)
-      : null;
+const MARKET_POSITION_COLOR: Record<string, string> = {
+  below_market: "text-emerald-600",
+  above_market: "text-red-600",
+  around_market: "text-zinc-600",
+};
 
-  const deltaColor =
-    delta == null ? "" : delta > 10 ? "text-red-600" : delta < -5 ? "text-emerald-600" : "text-zinc-600";
+function PricePerSqmComparison({ property }: { property: Property }) {
+  const {
+    price_per_sqm,
+    market_reference_price_per_sqm,
+    market_reference_zone,
+    market_reference_confidence,
+    price_vs_market_pct,
+    price_vs_market_amount_per_sqm,
+    price_market_position,
+    price_market_commentary,
+  } = property;
+
+  const positionColor =
+    (price_market_position && MARKET_POSITION_COLOR[price_market_position]) || "text-zinc-400";
 
   return (
     <div className="rounded-lg bg-zinc-100 px-3 py-2.5">
@@ -236,20 +245,40 @@ function PricePerSqmComparison({
         <div className="flex flex-col">
           <span className="text-[10px] text-zinc-400">Imóvel</span>
           <span className="font-mono text-sm font-semibold text-zinc-900">
-            {formatPricePerSqm(propertyPricePerSqm)}
+            {formatPricePerSqm(price_per_sqm)}
           </span>
         </div>
         <span className="text-zinc-300">vs</span>
         <div className="flex flex-col">
-          <span className="text-[10px] text-zinc-400">Zona (ref.)</span>
-          <span className="font-mono text-sm text-zinc-600">{formatPricePerSqm(zonePricePerSqm)}</span>
+          <span className="text-[10px] text-zinc-400">
+            Zona (ref.){market_reference_zone ? ` · ${market_reference_zone}` : ""}
+          </span>
+          <span className="font-mono text-sm text-zinc-600">
+            {market_reference_price_per_sqm != null
+              ? formatPricePerSqm(market_reference_price_per_sqm)
+              : "Sem referência"}
+          </span>
         </div>
-        {delta != null && (
-          <span className={`ml-auto font-mono text-sm font-bold ${deltaColor}`}>
-            {delta > 0 ? "+" : ""}{delta}%
+        {price_vs_market_pct != null && (
+          <span className={`ml-auto font-mono text-sm font-bold ${positionColor}`}>
+            {formatSignedPercent(price_vs_market_pct)}
           </span>
         )}
       </div>
+
+      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px]">
+        <span className={`font-medium ${positionColor}`}>{formatMarketPosition(price_market_position)}</span>
+        {market_reference_confidence && (
+          <span className="text-zinc-500">· {formatMarketConfidence(market_reference_confidence)}</span>
+        )}
+        {price_vs_market_amount_per_sqm != null && (
+          <span className="text-zinc-500">· {formatSignedEuroPerSqm(price_vs_market_amount_per_sqm)}</span>
+        )}
+      </div>
+
+      {price_market_commentary && (
+        <p className="mt-2 text-xs leading-relaxed text-zinc-600">{price_market_commentary}</p>
+      )}
     </div>
   );
 }

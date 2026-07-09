@@ -19,6 +19,31 @@ export const MARKET_LABELS: Record<MarketId, string> = {
   alges_arredores: "Algés/Miraflores",
 };
 
+const MARKET_POSITION_LABELS: Record<string, string> = {
+  below_market: "Abaixo do mercado",
+  around_market: "Em linha com o mercado",
+  above_market: "Acima do mercado",
+  unknown: "Sem dados suficientes",
+};
+
+/** Sinais que o backend ainda não tenha classificado caem no fallback, nunca num rótulo inventado. */
+export function formatMarketPosition(position: string | null | undefined): string {
+  if (!position) return "Sem dados suficientes";
+  return MARKET_POSITION_LABELS[position] ?? "Sem dados suficientes";
+}
+
+const MARKET_CONFIDENCE_LABELS: Record<string, string> = {
+  high: "Confiança alta",
+  medium: "Confiança média",
+  low: "Confiança baixa",
+  unknown: "Confiança desconhecida",
+};
+
+export function formatMarketConfidence(confidence: string | null | undefined): string {
+  if (!confidence) return "Confiança desconhecida";
+  return MARKET_CONFIDENCE_LABELS[confidence] ?? "Confiança desconhecida";
+}
+
 export const ALL_STATUSES: LeadStatus[] = ["new", "contacted", "visit", "not_relevant"];
 
 export const ALL_PRIORITIES: LeadPriority[] = ["high", "medium", "low", "exclude"];

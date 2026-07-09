@@ -12,16 +12,6 @@ const ZONE_TIERS: Record<string, 1 | 2 | 3> = {
   Estoril: 2,
 };
 
-/** Preço médio de mercado por m² por zona (€/m²) — valores de referência aproximados. */
-const ZONE_PRICE_PER_SQM: Record<string, number> = {
-  "Quinta da Marinha": 4500,
-  Birre: 4000,
-  Guincho: 4500,
-  "Monte Estoril": 5000,
-  "Cascais Centro": 5500,
-  Estoril: 5000,
-};
-
 /**
  * Devolve null para zonas sem tier definido (ex: zonas de Algés/Miraflores,
  * que ainda não têm classificação neste ficheiro) — nunca inventamos um
@@ -30,9 +20,4 @@ const ZONE_PRICE_PER_SQM: Record<string, number> = {
 export function zoneTier(zone: string | null): 1 | 2 | 3 | null {
   if (!zone) return null;
   return ZONE_TIERS[zone] ?? null;
-}
-
-export function zonePricePerSqm(zone: string | null): number | null {
-  if (!zone) return null;
-  return ZONE_PRICE_PER_SQM[zone] ?? null;
 }
