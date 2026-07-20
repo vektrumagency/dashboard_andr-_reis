@@ -33,6 +33,28 @@ export interface Property {
   lat: number | null;
   lng: number | null;
   images: string[];
+  energy_rating?: string | null;
+  bathrooms?: number | null;
+  floor?: string | null;
+  has_elevator?: boolean | null;
+  has_parking?: boolean | null;
+  has_terrace?: boolean | null;
+  has_balcony?: boolean | null;
+  has_garden?: boolean | null;
+  has_swimming_pool?: boolean | null;
+  has_air_conditioning?: boolean | null;
+  has_storage_room?: boolean | null;
+  has_exterior_facing?: boolean | null;
+  has_floor_plan?: boolean | null;
+  has_virtual_tour?: boolean | null;
+  has_staging?: boolean | null;
+  is_new_development?: boolean | null;
+  municipality?: string | null;
+  /** Como a localização foi obtida — ver o agente de localização (Francisco). */
+  location_precision?: string | null;
+  location_source?: string | null;
+  portal_listing_id?: string | null;
+  description?: string | null;
   /**
    * Benchmark de mercado calculado e persistido pelo backend — o frontend
    * só lê estes campos, nunca calcula o benchmark. Opcionais porque nem
@@ -97,6 +119,8 @@ export interface Lead {
   outreach_message_version?: number | null;
   outreach_message_status?: string | null;
   manual_notes: string | null;
+  /** Explica porque um lead que ainda não avançou para outreach vale continuar a acompanhar. */
+  monitor_reason?: string | null;
   price_history: PriceSnapshot[];
   created_at: string;
   updated_at: string;

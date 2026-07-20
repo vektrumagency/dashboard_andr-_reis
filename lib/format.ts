@@ -56,3 +56,29 @@ export function formatDateTime(value: string | null | undefined): string {
     minute: "2-digit",
   }).format(date);
 }
+
+export function formatDate(value: string | null | undefined): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("pt-PT", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+}
+
+export function formatRelativeTime(value: string | null | undefined): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  const diffDays = Math.floor((Date.now() - date.getTime()) / 86_400_000);
+  if (diffDays <= 0) return "hoje";
+  if (diffDays === 1) return "há 1 dia";
+  if (diffDays < 30) return `há ${diffDays} dias`;
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths === 1) return "há 1 mês";
+  if (diffMonths < 12) return `há ${diffMonths} meses`;
+  const diffYears = Math.floor(diffMonths / 12);
+  return diffYears === 1 ? "há 1 ano" : `há ${diffYears} anos`;
+}
