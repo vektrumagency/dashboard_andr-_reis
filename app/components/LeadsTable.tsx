@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Lead, LeadStatus } from "@/lib/types";
-import { formatArea, formatPrice } from "@/lib/format";
+import { formatArea, formatPrice, formatPricePerSqm } from "@/lib/format";
 import {
   ALL_PRIORITIES,
   ALL_STATUSES,
@@ -19,7 +19,7 @@ import { LeadSearch } from "./LeadSearch";
 
 const ALL = "Todas";
 
-const GRID_COLS = "grid-cols-[1.4fr_0.8fr_1fr_0.8fr_1fr_0.9fr_0.6fr_0.9fr]";
+const GRID_COLS = "grid-cols-[1.4fr_0.8fr_1fr_0.8fr_0.8fr_0.9fr_0.6fr_0.9fr]";
 
 function statusFromParam(value: string | null): string {
   if (value && ALL_STATUSES.includes(value as LeadStatus)) return value;
@@ -74,8 +74,8 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
             <span>Zona</span>
             <span>Tipologia</span>
             <span>Preço</span>
+            <span>€/m²</span>
             <span>Área</span>
-            <span>Dias no mercado</span>
             <span>Prioridade</span>
             <span>Score</span>
             <span>Estado</span>
@@ -111,8 +111,8 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
                       </span>
                     )}
                   </div>
+                  <div className="text-zinc-700">{formatPricePerSqm(lead.property.price_per_sqm)}</div>
                   <div className="text-zinc-700">{formatArea(lead.property.area_sqm)}</div>
-                  <div className="text-zinc-700">{lead.property.days_on_market ?? "—"}</div>
                   <div>
                     <PriorityBadge priority={lead.priority} />
                   </div>
