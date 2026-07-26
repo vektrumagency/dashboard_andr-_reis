@@ -3,8 +3,10 @@ import { STATUS_LABELS } from "@/lib/leads";
 
 const STYLES: Record<LeadStatus, string> = {
   new: "bg-blue-500 text-white",
+  saved: "bg-emerald-600 text-white",
   contacted: "bg-violet-500 text-white",
   visit: "bg-orange-500 text-white",
+  locating: "bg-cyan-600 text-white",
   not_relevant: "bg-zinc-500 text-white",
 };
 

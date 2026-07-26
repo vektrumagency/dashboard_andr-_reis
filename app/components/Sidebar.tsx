@@ -24,7 +24,13 @@ export function Sidebar() {
     ALL_STATUSES.map((status) => [status, leads.filter((lead) => lead.status === status).length]),
   ) as Record<(typeof ALL_STATUSES)[number], number>;
   const pendingCount = statusCounts.new;
-  const decidedStatuses = ALL_STATUSES.filter((status) => status !== "new");
+  const decidedStatuses = ALL_STATUSES.filter(
+    (status) => status !== "new" && status !== "locating",
+  );
+  const locatingLeads = leads.filter((lead) => lead.status === "locating");
+  const locatingProcessingCount = locatingLeads.filter(
+    (lead) => lead.localization_case?.status === "processing",
+  ).length;
 
   return (
     <aside className="flex w-56 shrink-0 flex-col bg-zinc-950 px-4 py-6 text-zinc-300">
@@ -65,6 +71,26 @@ export function Sidebar() {
             </Link>
           ))}
         </div>
+
+        <Link
+          href="/localizar"
+          className={`mt-2 flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+            pathname.startsWith("/localizar")
+              ? "bg-cyan-950 text-cyan-100"
+              : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
+          }`}
+        >
+          <span className="font-mono text-xs text-cyan-600">⌖</span>
+          Localizar
+          <span className="ml-auto flex items-center gap-1.5 font-mono text-[11px]">
+            {locatingProcessingCount > 0 && (
+              <span className="rounded-full bg-cyan-700 px-1.5 py-0.5 text-cyan-50">
+                {locatingProcessingCount}
+              </span>
+            )}
+            <span className="text-zinc-600">{locatingLeads.length}</span>
+          </span>
+        </Link>
 
         {NAV_ITEMS.map((item) => {
           const active = pathname.startsWith(item.href);

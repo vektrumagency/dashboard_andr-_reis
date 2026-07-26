@@ -2,7 +2,8 @@
 
 Password-protected frontend dashboard for a real estate lead management system. Displays AI-scored property listings from the Cascais premium market for a consultant to review, track, and act on.
 
-**Views:** leads table, map with priority pins, outreach message queue.
+**Views:** leads table, Localizar processing/answered queue, map with priority pins,
+and outreach message queue.
 
 ## Stack
 
@@ -23,6 +24,10 @@ Create `.env.local`:
 DASHBOARD_PASSWORD=your_password
 DASHBOARD_SESSION_SECRET=a_long_random_string
 NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ1...
+MONGODB_URI=mongodb://...
+MONGODB_DB_NAME=andre_reis_leads
+LEAD_RESEARCHER_API_URL=http://localhost:8000
+DASHBOARD_SERVICE_TOKEN=the_same_dashboard_token_configured_in_fastapi
 ```
 
 ```bash
@@ -38,12 +43,16 @@ npm run start
 | `/` | Leads table (score-sorted, filterable) |
 | `/mapa` | Mapbox map with priority-colored pins |
 | `/atacar` | Outreach queue (high-priority leads only) |
+| `/localizar` | Properties awaiting Vektrum localization and answered addresses |
 | `/leads/[id]` | Lead detail — modal from table, full page on direct URL |
 | `/login` | Password entry |
 
 ## Architecture
 
-**Mock data → Supabase migration path.** `lib/types.ts` is kept 1:1 with the Python backend Pydantic models. `lib/leadsStore.tsx` persists status overrides in localStorage. Swapping to live data only requires changing the data source in `LeadsProvider` — no type changes needed.
+**MongoDB reads + authenticated BFF mutations.** `lib/types.ts` is kept aligned
+with the Python Pydantic models. The dashboard reads leads server-side from the
+shared MongoDB database. Localizar mutations pass through authenticated Next.js
+route handlers to FastAPI; service tokens never reach browser code.
 
 **Parallel + intercepting routes for modal UX.** `/leads/[id]` from the table renders as a modal overlay (`@modal/(.)leads/[id]`); direct URL access renders the full page.
 

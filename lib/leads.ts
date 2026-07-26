@@ -1,9 +1,18 @@
 import { Lead, LeadPriority, LeadStatus, MarketId } from "./types";
 
+const SELLER_LABELS: Record<Lead["seller"]["type"], string> = {
+  private: "Particular",
+  agency: "Agência",
+  promoter: "Promotor",
+  unknown: "Desconhecido",
+};
+
 export const STATUS_LABELS: Record<LeadStatus, string> = {
   new: "Novo",
+  saved: "Guardado",
   contacted: "Contactado",
   visit: "Visita",
+  locating: "Localizar",
   not_relevant: "Não relevante",
 };
 
@@ -16,6 +25,7 @@ export const PRIORITY_LABELS: Record<LeadPriority, string> = {
 
 export const MARKET_LABELS: Record<MarketId, string> = {
   cascais: "Cascais",
+  belem_restelo: "Belém/Restelo",
   alges_arredores: "Algés/Miraflores",
 };
 
@@ -44,7 +54,22 @@ export function formatMarketConfidence(confidence: string | null | undefined): s
   return MARKET_CONFIDENCE_LABELS[confidence] ?? "Confiança desconhecida";
 }
 
-export const ALL_STATUSES: LeadStatus[] = ["new", "contacted", "visit", "not_relevant"];
+export const ALL_STATUSES: LeadStatus[] = [
+  "new",
+  "saved",
+  "contacted",
+  "visit",
+  "locating",
+  "not_relevant",
+];
+
+export const PIPELINE_STATUSES: Exclude<LeadStatus, "locating">[] = [
+  "new",
+  "saved",
+  "contacted",
+  "visit",
+  "not_relevant",
+];
 
 export const ALL_PRIORITIES: LeadPriority[] = ["high", "medium", "low", "exclude"];
 
@@ -55,6 +80,11 @@ export function marketsSummary(leads: Lead[]): string {
   if (labels.length === 0) return "";
   if (labels.length === 1) return labels[0];
   return `${labels.slice(0, -1).join(", ")} e ${labels[labels.length - 1]}`;
+}
+
+export function sellerDisplayName(seller: Lead["seller"]): string {
+  const typeLabel = SELLER_LABELS[seller.type];
+  return seller.agency_name ? `${typeLabel} · ${seller.agency_name}` : typeLabel;
 }
 
 export function uniqueZones(leads: Lead[]): string[] {
@@ -99,6 +129,8 @@ export function searchLeads(leads: Lead[], query: string): Lead[] {
         lead.seller.name,
         lead.seller.agency_name,
         lead.manual_notes,
+        lead.localization_case?.answer?.formatted_address,
+        lead.localization_case?.answer?.explanation,
         ...lead.signals,
       ]
         .filter((part): part is string => !!part)

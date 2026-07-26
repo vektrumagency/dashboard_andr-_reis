@@ -1,14 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateLeadStatus } from "@/lib/api";
-import { ALL_STATUSES } from "@/lib/leads";
+import { PIPELINE_STATUSES } from "@/lib/leads";
 import { LeadStatus } from "@/lib/types";
+import { verifyRequestSession } from "@/lib/auth";
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!(await verifyRequestSession(request))) {
+    return NextResponse.json({ error: "Sessão inválida." }, { status: 401 });
+  }
   const { id } = await params;
   const body = await request.json().catch(() => null);
   const status = body?.status;
 
-  if (typeof status !== "string" || !ALL_STATUSES.includes(status as LeadStatus)) {
+  if (
+    typeof status !== "string" ||
+    !PIPELINE_STATUSES.includes(status as Exclude<LeadStatus, "locating">)
+  ) {
     return NextResponse.json({ error: "Estado inválido." }, { status: 400 });
   }
 

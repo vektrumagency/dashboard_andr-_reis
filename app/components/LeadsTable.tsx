@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Lead, LeadStatus } from "@/lib/types";
 import { formatArea, formatPrice, formatPricePerSqm } from "@/lib/format";
@@ -9,6 +9,7 @@ import {
   ALL_STATUSES,
   PRIORITY_LABELS,
   searchLeads,
+  sellerDisplayName,
   uniqueTypologies,
   uniqueZones,
 } from "@/lib/leads";
@@ -32,12 +33,8 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
   const [search, setSearch] = useState("");
   const [zone, setZone] = useState(ALL);
   const [priority, setPriority] = useState(ALL);
-  const [status, setStatus] = useState(() => statusFromParam(searchParams.get("status")));
+  const status = statusFromParam(searchParams.get("status"));
   const [typology, setTypology] = useState(ALL);
-
-  useEffect(() => {
-    setStatus(statusFromParam(searchParams.get("status")));
-  }, [searchParams]);
 
   const zones = useMemo(() => uniqueZones(leads), [leads]);
   const typologies = useMemo(() => uniqueTypologies(leads), [leads]);
@@ -93,13 +90,7 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
                   <div>
                     <span className="font-medium text-zinc-900">{lead.property.zone}</span>
                     <span className="block text-xs text-zinc-500">
-                      {lead.seller.type === "private"
-                        ? "Particular"
-                        : lead.seller.type === "agency"
-                          ? "Agência"
-                          : lead.seller.type === "promoter"
-                            ? "Promotor"
-                            : "Desconhecido"}
+                      {sellerDisplayName(lead.seller)}
                     </span>
                   </div>
                   <div className="text-zinc-700">{lead.property.typology}</div>

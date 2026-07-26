@@ -12,23 +12,25 @@ import {
   formatSignedEuroPerSqm,
   formatSignedPercent,
 } from "@/lib/format";
-import { PRIORITY_LABELS, formatMarketConfidence, formatMarketPosition } from "@/lib/leads";
+import {
+  PRIORITY_LABELS,
+  formatMarketConfidence,
+  formatMarketPosition,
+  sellerDisplayName,
+} from "@/lib/leads";
 import { zoneTier } from "@/lib/zones";
 import { priorityAccent } from "@/lib/priorityAccent";
 import { scoreColor } from "@/lib/scoreColor";
 import { useLeads } from "@/lib/leadsStore";
+import {
+  LOCALIZATION_CONFIDENCE_LABELS,
+  localizationMapsUrl,
+} from "@/lib/localization";
 import { LeadActionBar } from "./LeadActionBar";
 import { ContactChannel } from "./ContactChannel";
 import { PhotoCarousel } from "./PhotoCarousel";
 
 const EXIT_ANIMATION_MS = 250;
-
-const SELLER_LABELS: Record<Lead["seller"]["type"], string> = {
-  private: "Particular",
-  agency: "Agência",
-  promoter: "Promotor",
-  unknown: "Desconhecido",
-};
 
 const PROPERTY_TYPE_LABELS: Record<string, string> = {
   house: "Moradia",
@@ -58,7 +60,13 @@ const AMENITIES: { key: keyof Property; label: string }[] = [
 
 export function LeadCard({ lead, nextId = null }: { lead: Lead; nextId?: string | null }) {
   const router = useRouter();
-  const { updateStatus } = useLeads();
+  const {
+    updateStatus,
+    requestLocalization,
+    cancelLocalization,
+    isLocalizationPending,
+    localizationError,
+  } = useLeads();
   const [isExiting, setIsExiting] = useState(false);
   const accent = priorityAccent(lead.priority);
   const { property, seller, ai_note } = lead;
@@ -71,6 +79,20 @@ export function LeadCard({ lead, nextId = null }: { lead: Lead; nextId?: string 
       router.replace(nextId ? `/leads/${nextId}` : "/");
     }, EXIT_ANIMATION_MS);
   }
+
+  async function handleLocate() {
+    if (await requestLocalization(lead.id)) {
+      setIsExiting(true);
+      setTimeout(() => router.replace("/localizar"), EXIT_ANIMATION_MS);
+    }
+  }
+
+  async function handleCancelLocalization() {
+    await cancelLocalization(lead.id);
+  }
+
+  const localizationPending = isLocalizationPending(lead.id);
+  const localizationFailure = localizationError(lead.id);
 
   return (
     <div
@@ -183,8 +205,7 @@ export function LeadCard({ lead, nextId = null }: { lead: Lead; nextId?: string 
               Vendedor
             </p>
             <p className="text-sm text-zinc-700">
-              {SELLER_LABELS[seller.type]}
-              {seller.agency_name ? ` · ${seller.agency_name}` : ""}
+              {sellerDisplayName(seller)}
               {seller.name ? ` · ${seller.name}` : ""}
               {seller.contact_source ? ` · via ${seller.contact_source}` : ""}
             </p>
@@ -198,9 +219,6 @@ export function LeadCard({ lead, nextId = null }: { lead: Lead; nextId?: string 
             {ai_note.diagnosis && <Note label="Diagnóstico" text={ai_note.diagnosis} />}
             {ai_note.owner_reading && <Note label="Leitura do proprietário" text={ai_note.owner_reading} />}
             {ai_note.entry_angle && <Note label="Ângulo de entrada" text={ai_note.entry_angle} />}
-            {ai_note.suggested_message && (
-              <Note label="Sugestão de abordagem (IA)" text={ai_note.suggested_message} />
-            )}
 
             {ai_note.next_action && (
               <div className="rounded-lg bg-zinc-100 px-4 py-3">
@@ -227,6 +245,10 @@ export function LeadCard({ lead, nextId = null }: { lead: Lead; nextId?: string 
                 </p>
                 <p className="mt-1 text-sm text-zinc-700">{lead.manual_notes}</p>
               </div>
+            )}
+
+            {lead.localization_case && (
+              <LocalizationPanel localization={lead.localization_case} />
             )}
           </div>
         </div>
@@ -265,9 +287,70 @@ export function LeadCard({ lead, nextId = null }: { lead: Lead; nextId?: string 
         </div>
       )}
 
+      {localizationFailure && (
+        <div
+          role="alert"
+          className="border-t border-red-100 bg-red-50 px-6 py-3 text-sm text-red-700"
+        >
+          {localizationFailure}
+        </div>
+      )}
+
       <div className="border-t border-zinc-200">
-        <LeadActionBar status={lead.status} disabled={isExiting} onDecide={handleDecide} />
+        <LeadActionBar
+          status={lead.status}
+          localizationStatus={lead.localization_case?.status}
+          disabled={isExiting || localizationPending}
+          onDecide={handleDecide}
+          onLocate={handleLocate}
+          onCancelLocalization={handleCancelLocalization}
+        />
       </div>
+    </div>
+  );
+}
+
+function LocalizationPanel({ localization }: { localization: NonNullable<Lead["localization_case"]> }) {
+  const answer = localization.answer;
+  if (localization.status === "processing" || !answer) {
+    return (
+      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-700">
+          Localização em processamento
+        </p>
+        <p className="mt-1 text-sm text-amber-950">
+          A Vektrum está a tentar localizar este imóvel.
+        </p>
+        <p className="mt-1 text-xs text-amber-700">
+          Pedido enviado {formatRelativeTime(localization.requested_at)}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-cyan-200 bg-cyan-50 px-4 py-3">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-700">
+        Morada estimada pela Vektrum
+      </p>
+      <p className="mt-1 text-base font-semibold text-cyan-950">{answer.formatted_address}</p>
+      <p className="mt-1 text-xs font-medium text-cyan-700">
+        {LOCALIZATION_CONFIDENCE_LABELS[answer.confidence]}
+        {localization.answered_at
+          ? ` · respondido ${formatRelativeTime(localization.answered_at)}`
+          : ""}
+      </p>
+      {answer.explanation && (
+        <p className="mt-2 text-sm leading-relaxed text-cyan-900">{answer.explanation}</p>
+      )}
+      <a
+        href={localizationMapsUrl(answer)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3 inline-block text-xs font-semibold text-cyan-800 underline underline-offset-2"
+      >
+        Abrir no Google Maps ↗
+      </a>
     </div>
   );
 }

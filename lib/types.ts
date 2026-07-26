@@ -4,9 +4,9 @@
  * app/models/lead.py e app/models/market.py nesse projeto.
  */
 
-export type MarketId = "cascais" | "alges_arredores";
+export type MarketId = "cascais" | "belem_restelo" | "alges_arredores";
 
-export type LeadStatus = "new" | "contacted" | "visit" | "not_relevant";
+export type LeadStatus = "new" | "saved" | "contacted" | "visit" | "locating" | "not_relevant";
 
 export type LeadPriority = "high" | "medium" | "low" | "exclude";
 
@@ -95,6 +95,32 @@ export interface PriceSnapshot {
   source: SourcePortal;
 }
 
+export type LocalizationConfidence = "high" | "medium" | "low";
+
+export interface LocalizationAnswer {
+  formatted_address: string;
+  street: string | null;
+  door_number: string | null;
+  postal_code: string | null;
+  locality: string | null;
+  municipality: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  confidence: LocalizationConfidence;
+  explanation: string | null;
+  answered_by: string;
+}
+
+export interface LocalizationCase {
+  request_id: string;
+  status: "processing" | "answered";
+  requested_at: string;
+  updated_at: string;
+  answered_at: string | null;
+  previous_lead_status: Exclude<LeadStatus, "locating">;
+  answer: LocalizationAnswer | null;
+}
+
 export interface Lead {
   id: string;
   market: MarketId;
@@ -118,6 +144,7 @@ export interface Lead {
   outreach_message_generated_at?: string | null;
   outreach_message_version?: number | null;
   outreach_message_status?: string | null;
+  localization_case?: LocalizationCase | null;
   manual_notes: string | null;
   /** Explica porque um lead que ainda não avançou para outreach vale continuar a acompanhar. */
   monitor_reason?: string | null;

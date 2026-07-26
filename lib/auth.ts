@@ -42,6 +42,12 @@ export async function verifySessionToken(token: string | undefined): Promise<boo
   return timingSafeEqual(signature, expectedSignature);
 }
 
+export async function verifyRequestSession(request: {
+  cookies: { get(name: string): { value: string } | undefined };
+}): Promise<boolean> {
+  return verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value);
+}
+
 function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let mismatch = 0;

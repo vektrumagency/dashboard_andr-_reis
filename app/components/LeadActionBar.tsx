@@ -30,15 +30,46 @@ const ACTIONS: {
 
 export function LeadActionBar({
   status,
+  localizationStatus,
   disabled,
   onDecide,
+  onLocate,
+  onCancelLocalization,
 }: {
   status: Lead["status"];
+  localizationStatus?: "processing" | "answered";
   disabled?: boolean;
   onDecide: (status: Lead["status"]) => void;
+  onLocate: () => void;
+  onCancelLocalization: () => void;
 }) {
+  if (status === "locating" && localizationStatus === "processing") {
+    return (
+      <div className="flex px-6 py-4">
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={onCancelLocalization}
+          className="w-full rounded-lg border border-zinc-300 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-600 transition-colors hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-50"
+        >
+          {disabled ? "A atualizar…" : "Cancelar pedido"}
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex gap-2 px-6 py-4">
+    <div className="flex flex-wrap gap-2 px-6 py-4">
+      {status !== "locating" && (
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={onLocate}
+          className="min-w-32 flex-1 rounded-lg border border-cyan-200 py-2.5 text-xs font-semibold uppercase tracking-wide text-cyan-700 transition-colors hover:bg-cyan-50 disabled:cursor-wait disabled:opacity-50"
+        >
+          {disabled ? "A enviar…" : "Localizar"}
+        </button>
+      )}
       {ACTIONS.map((action) => {
         const isActive = status === action.status;
         return (
