@@ -2,27 +2,37 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { AdjacentResult, LeadQuery, leadHref } from "@/lib/leadQuery";
+
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return (
+    target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable
+  );
+}
 
 export function LeadModal({
   children,
-  prevId,
-  nextId,
+  adjacency,
+  query,
 }: {
   children: React.ReactNode;
-  prevId?: string | null;
-  nextId?: string | null;
+  adjacency: AdjacentResult;
+  query: LeadQuery;
 }) {
   const router = useRouter();
+  const { prevId, nextId } = adjacency;
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
+      if (isTypingTarget(event.target)) return;
       if (event.key === "Escape") router.back();
-      if (event.key === "ArrowLeft" && prevId) router.replace(`/leads/${prevId}`);
-      if (event.key === "ArrowRight" && nextId) router.replace(`/leads/${nextId}`);
+      if (event.key === "ArrowLeft" && prevId) router.replace(leadHref(prevId, query));
+      if (event.key === "ArrowRight" && nextId) router.replace(leadHref(nextId, query));
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [router, prevId, nextId]);
+  }, [router, prevId, nextId, query]);
 
   return (
     <>
@@ -38,20 +48,28 @@ export function LeadModal({
             type="button"
             onClick={() => router.back()}
             aria-label="Fechar"
-            className="absolute -right-3 -top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 shadow-sm hover:bg-zinc-50 hover:text-zinc-700"
+            className="absolute -right-3 -top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-line bg-surface text-ink-muted shadow-sm hover:bg-surface-hover hover:text-ink"
           >
             ✕
           </button>
           {children}
         </div>
       </div>
-      <NavArrow direction="prev" id={prevId ?? null} />
-      <NavArrow direction="next" id={nextId ?? null} />
+      <NavArrow direction="prev" id={prevId} query={query} />
+      <NavArrow direction="next" id={nextId} query={query} />
     </>
   );
 }
 
-function NavArrow({ direction, id }: { direction: "prev" | "next"; id: string | null }) {
+function NavArrow({
+  direction,
+  id,
+  query,
+}: {
+  direction: "prev" | "next";
+  id: string | null;
+  query: LeadQuery;
+}) {
   const router = useRouter();
 
   if (!id) return null;
@@ -59,9 +77,9 @@ function NavArrow({ direction, id }: { direction: "prev" | "next"; id: string | 
   return (
     <button
       type="button"
-      onClick={() => router.replace(`/leads/${id}`)}
+      onClick={() => router.replace(leadHref(id, query))}
       aria-label={direction === "prev" ? "Lead anterior" : "Lead seguinte"}
-      className={`fixed top-1/2 z-50 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-200 bg-white text-lg text-zinc-600 shadow-md hover:bg-zinc-50 hover:text-zinc-900 ${
+      className={`fixed top-1/2 z-50 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface text-lg text-ink-muted shadow-md hover:bg-surface-hover hover:text-ink ${
         direction === "prev" ? "left-3 sm:left-6" : "right-3 sm:right-6"
       }`}
     >

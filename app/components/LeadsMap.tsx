@@ -7,12 +7,19 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { Lead, LeadPriority } from "@/lib/types";
 import { formatPrice } from "@/lib/format";
 import { PRIORITY_LABELS } from "@/lib/leads";
+import { priorityTone } from "@/lib/tone";
 
+/**
+ * O Mapbox cria os markers via DOM imperativo (ver useEffect abaixo), pelo
+ * que não consegue ler var(--color-*) do CSS — precisa de um valor de cor
+ * cru em JS. `priorityTone().hex` espelha os tokens de app/globals.css;
+ * ver o comentário em lib/tone.ts sobre esta duplicação consciente.
+ */
 const PIN_COLORS: Record<LeadPriority, string> = {
-  high: "#ef4444",
-  medium: "#f59e0b",
-  low: "#0ea5e9",
-  exclude: "#a1a1aa",
+  high: priorityTone("high").hex,
+  medium: priorityTone("medium").hex,
+  low: priorityTone("low").hex,
+  exclude: priorityTone("exclude").hex,
 };
 
 // Centro por omissão (área Cascais/Algés) — só usado quando ainda não há

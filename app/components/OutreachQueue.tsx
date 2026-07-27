@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Bookmark, Check, ImageOff } from "lucide-react";
 import { Lead } from "@/lib/types";
 import { formatArea, formatDateTime, formatPrice } from "@/lib/format";
-import { scoreColor } from "@/lib/scoreColor";
+import { scoreTone } from "@/lib/tone";
+import { briefingModel } from "@/lib/derive/briefing";
 import { CopyButton } from "./CopyButton";
 
 export function OutreachQueue({ leads }: { leads: Lead[] }) {
@@ -31,7 +33,7 @@ export function OutreachQueue({ leads }: { leads: Lead[] }) {
 
   if (leads.length === 0) {
     return (
-      <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-zinc-300 text-sm text-zinc-400">
+      <div className="flex h-48 items-center justify-center rounded-card border border-dashed border-line-strong text-sm text-ink-faint">
         Sem leads de prioridade alta à espera de outreach.
       </div>
     );
@@ -41,75 +43,83 @@ export function OutreachQueue({ leads }: { leads: Lead[] }) {
     <div className="flex flex-col gap-4">
       {leads.map((lead) => {
         const approved = approvedIds.has(lead.id);
+        const score = scoreTone(lead.score);
+        const cover = lead.property.images[0];
+        // ai_note.next_action está sempre vazio na BD real — mostrar em vez
+        // disso o primeiro motivo do briefing comercial, quando existe.
+        const context = briefingModel(lead)?.whyGoodLead[0]?.text ?? lead.monitor_reason;
         return (
           <div
             key={lead.id}
-            className={`rounded-2xl border bg-white transition-opacity ${
-              approved ? "border-emerald-200 opacity-60" : "border-zinc-200"
+            className={`overflow-hidden rounded-card border bg-surface transition-opacity ${
+              approved ? "border-positive/30 opacity-60" : "border-line"
             }`}
           >
-            <div className="flex items-start justify-between gap-4 border-b border-zinc-100 px-6 py-4">
+            <div className="flex items-start justify-between gap-4 border-b border-line px-6 py-4">
               <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-full border-2 border-red-500/30 bg-zinc-50 font-mono">
-                  <span className={`text-base font-bold leading-none ${scoreColor(lead.score)}`}>
-                    {lead.score}
-                  </span>
+                <div className="h-12 w-16 shrink-0 overflow-hidden rounded-tile bg-surface-sunken">
+                  {cover ? (
+                    <img src={cover} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-ink-faint">
+                      <ImageOff size={14} />
+                    </div>
+                  )}
+                </div>
+                <div className="flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-pill border-2 border-line-strong bg-surface-sunken font-mono">
+                  <span className={`text-sm font-bold leading-none ${score.text}`}>{lead.score}</span>
                 </div>
                 <div>
-                  <p className="font-mono text-[11px] uppercase tracking-widest text-zinc-500">
-                    {lead.id}
-                  </p>
-                  <h2 className="text-base font-semibold text-zinc-900">
-                    {lead.property.zone} · {lead.property.typology}
+                  <h2 className="text-base font-semibold text-ink">
+                    {lead.property.zone} {lead.property.typology ? `· ${lead.property.typology}` : ""}
                   </h2>
-                  <p className="text-sm text-zinc-500">
-                    {formatPrice(lead.property.price_current)} · {formatArea(lead.property.area_sqm)} ·{" "}
-                    {lead.property.days_on_market} dias no mercado
+                  <p className="text-sm text-ink-muted">
+                    {formatPrice(lead.property.price_current)} · {formatArea(lead.property.area_sqm)}
                   </p>
                 </div>
               </div>
               <Link
                 href={`/leads/${lead.id}`}
-                className="shrink-0 text-sm text-zinc-500 hover:text-zinc-900"
+                className="shrink-0 text-sm text-ink-faint hover:text-ink"
               >
                 Ver ficha →
               </Link>
             </div>
 
             <div className="flex flex-col gap-3 px-6 py-5">
-              {lead.ai_note.next_action && (
-                <p className="text-sm text-zinc-600">
-                  <span className="font-medium text-zinc-900">Próxima ação: </span>
-                  {lead.ai_note.next_action}
+              {context && (
+                <p className="text-sm text-ink-muted">
+                  <span className="font-medium text-ink">Porquê agora: </span>
+                  {context}
                 </p>
               )}
 
               {lead.outreach_message_status === "failed" ? (
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-ink-faint">
                   Mensagem personalizada não gerada para esta lead.
                 </p>
               ) : !lead.outreach_message ? (
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-ink-faint">
                   Ainda não há mensagem personalizada para esta lead.
                 </p>
               ) : (
                 <>
                   {lead.outreach_angle && (
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-xs text-ink-faint">
                       <span className="font-semibold uppercase tracking-wide">Ângulo: </span>
                       {lead.outreach_angle}
                     </p>
                   )}
 
                   {lead.outreach_message_subject && (
-                    <p className="text-sm text-zinc-700">
-                      <span className="font-medium text-zinc-900">Assunto sugerido: </span>
+                    <p className="text-sm text-ink-muted">
+                      <span className="font-medium text-ink">Assunto sugerido: </span>
                       {lead.outreach_message_subject}
                     </p>
                   )}
 
                   <label className="flex flex-col gap-1.5">
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
                       Mensagem sugerida (editável)
                     </span>
                     <textarea
@@ -119,19 +129,19 @@ export function OutreachQueue({ leads }: { leads: Lead[] }) {
                       }
                       disabled={approved}
                       rows={3}
-                      className="w-full whitespace-pre-line rounded-lg border border-zinc-200 bg-zinc-50 p-3 font-mono text-sm leading-relaxed text-zinc-700 focus:border-zinc-400 focus:outline-none disabled:opacity-70"
+                      className="w-full whitespace-pre-line rounded-tile border border-line-strong bg-surface-sunken p-3 font-mono text-sm leading-relaxed text-ink-muted focus:border-accent focus:outline-none disabled:opacity-70"
                     />
                   </label>
 
-                  {lead.outreach_personalization_notes && (
-                    <p className="text-xs text-zinc-500">
+                  {lead.outreach_personalization_notes && lead.outreach_personalization_notes.length > 0 && (
+                    <p className="text-xs text-ink-faint">
                       <span className="font-semibold uppercase tracking-wide">Notas de personalização: </span>
-                      {lead.outreach_personalization_notes}
+                      {lead.outreach_personalization_notes.join(" · ")}
                     </p>
                   )}
 
                   {lead.outreach_message_generated_at && (
-                    <p className="text-[11px] text-zinc-400">
+                    <p className="text-[11px] text-ink-faint">
                       Gerada em {formatDateTime(lead.outreach_message_generated_at)}
                     </p>
                   )}
@@ -142,7 +152,7 @@ export function OutreachQueue({ leads }: { leads: Lead[] }) {
                       <button
                         type="button"
                         onClick={() => copyBoth(lead)}
-                        className="rounded-md border border-zinc-700 bg-zinc-800 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide text-zinc-300 hover:border-zinc-600 hover:bg-zinc-700"
+                        className="rounded-tile border border-line-strong px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide text-ink-muted hover:bg-surface-hover"
                       >
                         {copiedBothIds.has(lead.id) ? "Copiado ✓" : "Copiar assunto + mensagem"}
                       </button>
@@ -151,9 +161,11 @@ export function OutreachQueue({ leads }: { leads: Lead[] }) {
                       type="button"
                       disabled={approved}
                       onClick={() => setApprovedIds((prev) => new Set(prev).add(lead.id))}
-                      className="rounded-md bg-emerald-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-default disabled:bg-emerald-600/50"
+                      title="Marca a mensagem como pronta — não envia nada automaticamente"
+                      className="flex items-center gap-1.5 rounded-tile bg-positive px-4 py-1.5 text-sm font-medium text-canvas hover:opacity-90 disabled:cursor-default disabled:opacity-50"
                     >
-                      {approved ? "Aprovado ✓" : "Aprovar envio"}
+                      {approved ? <Check size={14} /> : <Bookmark size={14} />}
+                      {approved ? "Marcada como aprovada" : "Marcar como aprovada"}
                     </button>
                   </div>
                 </>

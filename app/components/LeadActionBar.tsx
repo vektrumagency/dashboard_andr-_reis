@@ -1,30 +1,47 @@
 "use client";
 
+import { Bookmark, CalendarCheck, MapPin, Phone, X } from "lucide-react";
 import { Lead } from "@/lib/types";
 
+/**
+ * "saved" tinha rótulo, cor e entrada na sidebar mas nenhum botão o
+ * definia — Guardar torna esse estado alcançável, útil num CRM em que
+ * nem toda a decisão é "contactar" ou "rejeitar" de imediato.
+ */
 const ACTIONS: {
   status: Lead["status"];
   label: string;
+  icon: typeof Bookmark;
   active: string;
   idle: string;
 }[] = [
   {
-    status: "not_relevant",
-    label: "Não relevante",
-    active: "bg-red-500 border-red-500 text-white",
-    idle: "border-zinc-200 text-zinc-500 hover:border-red-200 hover:text-red-500 hover:bg-red-50",
+    status: "saved",
+    label: "Guardar",
+    icon: Bookmark,
+    active: "bg-status-saved border-status-saved text-canvas",
+    idle: "border-line-strong text-ink-muted hover:border-status-saved hover:text-status-saved hover:bg-status-saved/10",
   },
   {
     status: "contacted",
     label: "Contactado",
-    active: "bg-violet-600 border-violet-600 text-white",
-    idle: "border-zinc-200 text-zinc-500 hover:border-violet-200 hover:text-violet-600 hover:bg-violet-50",
+    icon: Phone,
+    active: "bg-status-contacted border-status-contacted text-canvas",
+    idle: "border-line-strong text-ink-muted hover:border-status-contacted hover:text-status-contacted hover:bg-status-contacted/10",
   },
   {
     status: "visit",
     label: "Visita agendada",
-    active: "bg-orange-500 border-orange-500 text-white",
-    idle: "border-zinc-200 text-zinc-500 hover:border-orange-200 hover:text-orange-500 hover:bg-orange-50",
+    icon: CalendarCheck,
+    active: "bg-status-visit border-status-visit text-canvas",
+    idle: "border-line-strong text-ink-muted hover:border-status-visit hover:text-status-visit hover:bg-status-visit/10",
+  },
+  {
+    status: "not_relevant",
+    label: "Não relevante",
+    icon: X,
+    active: "bg-negative border-negative text-canvas",
+    idle: "border-line-strong text-ink-muted hover:border-negative hover:text-negative hover:bg-negative/10",
   },
 ];
 
@@ -50,7 +67,7 @@ export function LeadActionBar({
           type="button"
           disabled={disabled}
           onClick={onCancelLocalization}
-          className="w-full rounded-lg border border-zinc-300 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-600 transition-colors hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-50"
+          className="w-full rounded-tile border border-line-strong py-2.5 text-xs font-semibold uppercase tracking-wide text-ink-muted transition-colors hover:bg-surface-hover disabled:cursor-wait disabled:opacity-50"
         >
           {disabled ? "A atualizar…" : "Cancelar pedido"}
         </button>
@@ -65,13 +82,15 @@ export function LeadActionBar({
           type="button"
           disabled={disabled}
           onClick={onLocate}
-          className="min-w-32 flex-1 rounded-lg border border-cyan-200 py-2.5 text-xs font-semibold uppercase tracking-wide text-cyan-700 transition-colors hover:bg-cyan-50 disabled:cursor-wait disabled:opacity-50"
+          className="flex min-w-32 flex-1 items-center justify-center gap-1.5 rounded-tile border border-accent py-2.5 text-xs font-semibold uppercase tracking-wide text-accent transition-colors hover:bg-accent-soft disabled:cursor-wait disabled:opacity-50"
         >
+          <MapPin size={14} strokeWidth={2} />
           {disabled ? "A enviar…" : "Localizar"}
         </button>
       )}
       {ACTIONS.map((action) => {
         const isActive = status === action.status;
+        const Icon = action.icon;
         return (
           <button
             key={action.status}
@@ -79,10 +98,11 @@ export function LeadActionBar({
             aria-pressed={isActive}
             disabled={disabled}
             onClick={() => onDecide(action.status)}
-            className={`flex-1 rounded-lg border py-2.5 text-xs font-semibold uppercase tracking-wide transition-colors disabled:cursor-default disabled:opacity-50 ${
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-tile border py-2.5 text-xs font-semibold uppercase tracking-wide transition-colors disabled:cursor-default disabled:opacity-50 ${
               isActive ? action.active : action.idle
             }`}
           >
+            <Icon size={14} strokeWidth={2} />
             {action.label}
           </button>
         );

@@ -1,10 +1,96 @@
 @import "tailwindcss";
 
-@theme inline {
+/**
+ * Tokens do dashboard — direção "dark premium". Só existe tema escuro
+ * (decisão do cliente); não há bloco @media (prefers-color-scheme). Tudo
+ * o que precisa de cor deve ler daqui, nunca voltar a hardcodar hex/zinc-*
+ * espalhado pelos componentes — ver lib/tone.ts para os mapas semânticos
+ * (prioridade, estado, score, polaridade) construídos sobre estas cores.
+ *
+ * NOTA para o Mapbox (app/components/LeadsMap.tsx): o SDK precisa de cores
+ * cruas em JS, não consegue ler custom properties CSS em alguns contextos
+ * (marker DOM criado imperativamente). lib/tone.ts espelha os matizes de
+ * prioridade também como valores hex, com um comentário a apontar para cá —
+ * é duplicação consciente, não um esquecimento.
+ */
+@theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Superfícies — do fundo para o elemento mais "levantado" */
+  --color-canvas: #0a0a0d;
+  --color-surface: #16161b;
+  --color-surface-raised: #1e1e25;
+  --color-surface-sunken: #101013;
+  --color-surface-hover: #232329;
+
+  /* Linhas */
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-line-strong: rgba(255, 255, 255, 0.16);
+
+  /* Texto */
+  --color-ink: #f4f4f5;
+  --color-ink-muted: #a1a1ab;
+  --color-ink-faint: #6c6c76;
+
+  /* Acento — cyan é a cor Vektrum/Localizar; dourado é o acento premium */
+  --color-accent: #22d3ee;
+  --color-accent-strong: #06b6d4;
+  --color-accent-soft: rgba(34, 211, 238, 0.14);
+  --color-gold: #d8b46a;
+  --color-gold-strong: #c99a3f;
+  --color-gold-soft: rgba(216, 180, 106, 0.14);
+
+  /* Polaridade — bullets do briefing, sinais, posição de mercado */
+  --color-positive: #34d399;
+  --color-positive-soft: rgba(52, 211, 153, 0.14);
+  --color-negative: #f87171;
+  --color-negative-soft: rgba(248, 113, 113, 0.14);
+  --color-warning: #fbbf24;
+  --color-warning-soft: rgba(251, 191, 36, 0.14);
+  --color-neutral: #9a9aa5;
+  --color-neutral-soft: rgba(154, 154, 165, 0.12);
+
+  /* Estado do lead (pipeline) */
+  --color-status-new: #60a5fa;
+  --color-status-saved: #34d399;
+  --color-status-contacted: #a78bfa;
+  --color-status-visit: #fb923c;
+  --color-status-locating: #22d3ee;
+  --color-status-not_relevant: #71717a;
+
+  /* Raios e elevação */
+  --radius-tile: 0.75rem;
+  --radius-card: 1.25rem;
+  --radius-pill: 9999px;
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 20px 40px -20px rgba(0, 0, 0, 0.6);
+  --shadow-glow-accent: 0 0 0 1px rgba(34, 211, 238, 0.4), 0 0 24px rgba(34, 211, 238, 0.25);
+  --shadow-glow-gold: 0 0 0 1px rgba(216, 180, 106, 0.4), 0 0 24px rgba(216, 180, 106, 0.2);
 }
 
+:root {
+  color-scheme: dark;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.15s ease-out;
+}
+
+/*
+ * TODO(workstream 3): estas três animações são legado do modal/card antigos
+ * e serão substituídas por `motion` quando LeadCard/LeadModal forem
+ * reescritos. Mantidas por agora para os componentes actuais não perderem
+ * a transição enquanto o resto do redesign avança de baixo para cima.
+ */
 @keyframes modal-backdrop-in {
   from {
     opacity: 0;

@@ -1,27 +1,29 @@
 import { notFound } from "next/navigation";
-import { getLeads } from "@/lib/api";
-import { adjacentLeadIds } from "@/lib/leads";
+import { getLead, getLeadsList } from "@/lib/api";
+import { adjacentInQuery, parseLeadQuery, searchParamsFromRecord } from "@/lib/leadQuery";
 import { LiveLeadCard } from "@/app/components/LiveLeadCard";
 import { LeadModal } from "@/app/components/LeadModal";
 
 export default async function LeadModalPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { id } = await params;
-  const leads = await getLeads();
-  const lead = leads.find((item) => item.id === id);
+  const query = parseLeadQuery(searchParamsFromRecord(await searchParams));
+  const [lead, leads] = await Promise.all([getLead(id), getLeadsList()]);
 
   if (!lead) {
     notFound();
   }
 
-  const { prevId, nextId } = adjacentLeadIds(leads, id);
+  const adjacency = adjacentInQuery(leads, query, id);
 
   return (
-    <LeadModal prevId={prevId} nextId={nextId}>
-      <LiveLeadCard lead={lead} nextId={nextId} />
+    <LeadModal adjacency={adjacency} query={query}>
+      <LiveLeadCard lead={lead} adjacency={adjacency} query={query} />
     </LeadModal>
   );
 }

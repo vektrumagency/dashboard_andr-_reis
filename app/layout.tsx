@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Sidebar } from "@/app/components/Sidebar";
-import { getLeads } from "@/lib/api";
+import { getLeadsList } from "@/lib/api";
 import { LeadsProvider } from "@/lib/leadsStore";
 import "./globals.css";
 
@@ -29,14 +29,14 @@ export default async function RootLayout({
   children: React.ReactNode;
   modal: React.ReactNode;
 }>) {
-  const leads = await getLeads();
+  const leads = await getLeadsList();
 
   return (
     <html
       lang="pt-PT"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex h-full bg-zinc-50 text-zinc-900">
+      <body className="flex h-full bg-canvas text-ink">
         <LeadsProvider initialLeads={leads}>
           <Sidebar />
           <div className="flex-1 overflow-y-auto">{children}</div>

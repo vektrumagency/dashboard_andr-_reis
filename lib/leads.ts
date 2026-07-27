@@ -140,15 +140,9 @@ export function searchLeads(leads: Lead[], query: string): Lead[] {
   });
 }
 
-export function adjacentLeadIds(
-  leads: Lead[],
-  currentId: string,
-): { prevId: string | null; nextId: string | null } {
-  const sorted = [...leads].sort((a, b) => b.score - a.score);
-  const index = sorted.findIndex((lead) => lead.id === currentId);
-  if (index === -1) return { prevId: null, nextId: null };
-  return {
-    prevId: index > 0 ? sorted[index - 1].id : null,
-    nextId: index < sorted.length - 1 ? sorted[index + 1].id : null,
-  };
-}
+/**
+ * Removida: adjacentLeadIds ordenava TODOS os leads por score e ignorava
+ * qualquer filtro — era a causa do bug em que as setas ‹ › saltavam de
+ * secção. Ver lib/leadQuery.ts#adjacentInQuery, que deriva prev/next da
+ * MESMA lista filtrada/ordenada que a tabela mostra.
+ */
