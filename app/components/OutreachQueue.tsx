@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Bookmark, Check, ImageOff } from "lucide-react";
+import { Bookmark, Check } from "lucide-react";
 import { Lead } from "@/lib/types";
 import { formatArea, formatDateTime, formatPrice } from "@/lib/format";
 import { scoreTone } from "@/lib/tone";
 import { briefingModel } from "@/lib/derive/briefing";
 import { CopyButton } from "./CopyButton";
+import { PropertyImage } from "./PropertyImage";
 
 export function OutreachQueue({ leads }: { leads: Lead[] }) {
   const [messages, setMessages] = useState<Record<string, string>>(
@@ -57,14 +58,8 @@ export function OutreachQueue({ leads }: { leads: Lead[] }) {
           >
             <div className="flex items-start justify-between gap-4 border-b border-line px-6 py-4">
               <div className="flex items-center gap-4">
-                <div className="h-12 w-16 shrink-0 overflow-hidden rounded-tile bg-surface-sunken">
-                  {cover ? (
-                    <img src={cover} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-ink-faint">
-                      <ImageOff size={14} />
-                    </div>
-                  )}
+                <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-tile bg-surface-sunken">
+                  <PropertyImage src={cover} alt="" sizes="64px" iconSize={14} />
                 </div>
                 <div className="flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-pill border-2 border-line-strong bg-surface-sunken font-mono">
                   <span className={`text-sm font-bold leading-none ${score.text}`}>{lead.score}</span>

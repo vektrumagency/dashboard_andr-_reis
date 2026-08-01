@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { Camera, ImageOff, LayoutGrid, Wand2 } from "lucide-react";
 import { Lead } from "@/lib/types";
 import { buildGallery, floorPlanIndices, imageUrlExpiry } from "@/lib/derive/gallery";
+import { PropertyImage } from "../PropertyImage";
 
 /**
  * Galeria hero do card — "as imagens são super importantes" foi um dos
@@ -67,14 +68,14 @@ export function LeadGallery({ lead }: { lead: Lead }) {
             {activeExpiry?.expired ? "Fotografia expirada" : "Não foi possível carregar a fotografia"}
           </div>
         ) : (
-          <img
+          <PropertyImage
             key={active.url}
             src={active.url}
             alt={`${alt} — foto ${activeIndex + 1} de ${images.length}`}
             loading="eager"
-            decoding="async"
+            sizes="(max-width: 768px) 100vw, 760px"
+            showFailureLabel
             onError={() => setDead((prev) => new Set(prev).add(active.index))}
-            className="h-full w-full object-cover"
           />
         )}
 
@@ -150,13 +151,12 @@ export function LeadGallery({ lead }: { lead: Lead }) {
                   <ImageOff size={14} className="text-ink-faint" />
                 </div>
               ) : (
-                <img
+                <PropertyImage
                   src={img.url}
                   alt=""
-                  loading="lazy"
-                  decoding="async"
+                  sizes="80px"
+                  iconSize={14}
                   onError={() => setDead((prev) => new Set(prev).add(img.index))}
-                  className="h-full w-full object-cover"
                 />
               )}
               {img.isFloorPlan && (
