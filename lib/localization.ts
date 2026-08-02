@@ -24,7 +24,7 @@ export function groupLocalizationLeads(leads: Lead[]): {
     new Date(a.localization_case?.updated_at ?? a.updated_at).getTime();
   return {
     processing: locating
-      .filter((lead) => lead.localization_case?.status === "processing")
+      .filter((lead) => (lead.localization_case?.status ?? "processing") === "processing")
       .sort(newestFirst),
     answered: locating
       .filter((lead) => lead.localization_case?.status === "answered")

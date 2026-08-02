@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateLeadStatus } from "@/lib/api";
-import { PIPELINE_STATUSES } from "@/lib/leads";
+import { ALL_STATUSES } from "@/lib/leads";
 import { LeadStatus } from "@/lib/types";
 import { verifyRequestSession } from "@/lib/auth";
 
@@ -12,10 +12,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const body = await request.json().catch(() => null);
   const status = body?.status;
 
-  if (
-    typeof status !== "string" ||
-    !PIPELINE_STATUSES.includes(status as Exclude<LeadStatus, "locating">)
-  ) {
+  if (typeof status !== "string" || !ALL_STATUSES.includes(status as LeadStatus)) {
     return NextResponse.json({ error: "Estado inválido." }, { status: 400 });
   }
 

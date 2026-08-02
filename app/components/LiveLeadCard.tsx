@@ -14,9 +14,9 @@ import { LeadDetail } from "./lead/LeadDetail";
  * Por isso a fusão é sobreposição de CAMPOS, não substituição do lead:
  * antes fazia `leads.find(id) ?? lead`, o que trocava o lead completo por
  * uma versão mais magra assim que a lista carregava — perdendo toda a
- * análise. Só `status` e `localization_case` são tocados pela store
- * (updateStatus / mutateLocalization), por isso só esses dois se
- * sobrepõem.
+ * análise. Só `status` é tocado pela store (updateStatus), mas
+ * `localization_case` também se sobrepõe porque pode ter sido atualizado
+ * no backend do Luís entre carregamentos.
  */
 export function LiveLeadCard({
   lead,

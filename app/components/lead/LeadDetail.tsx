@@ -44,13 +44,7 @@ export function LeadDetail({
   query: LeadQuery;
 }) {
   const router = useRouter();
-  const {
-    updateStatus,
-    requestLocalization,
-    cancelLocalization,
-    isLocalizationPending,
-    localizationError,
-  } = useLeads();
+  const { updateStatus } = useLeads();
   const [isExiting, setIsExiting] = useState(false);
   const [tab, setTab] = useState<TabKey>("comercial");
   const accent = priorityTone(lead.priority);
@@ -66,20 +60,7 @@ export function LeadDetail({
     }, EXIT_ANIMATION_MS);
   }
 
-  async function handleLocate() {
-    if (await requestLocalization(lead.id)) {
-      setIsExiting(true);
-      setTimeout(() => router.replace("/localizar"), EXIT_ANIMATION_MS);
-    }
-  }
-
-  async function handleCancelLocalization() {
-    await cancelLocalization(lead.id);
-  }
-
-  const localizationPending = isLocalizationPending(lead.id);
-  const localizationFailure = localizationError(lead.id);
-  const disabled = isExiting || localizationPending;
+  const disabled = isExiting;
 
   /**
    * Atalhos de teclado do deck de triagem: 1/2/3 decidem, L pede
@@ -105,7 +86,7 @@ export function LeadDetail({
           break;
         case "l":
         case "L":
-          if (lead.status !== "locating") handleLocate();
+          if (lead.status !== "locating") handleDecide("locating");
           break;
       }
     }
@@ -239,21 +220,8 @@ export function LeadDetail({
         )}
       </div>
 
-      {localizationFailure && (
-        <div role="alert" className="border-t border-negative/30 bg-negative-soft px-6 py-3 text-sm text-negative">
-          {localizationFailure}
-        </div>
-      )}
-
       <div className="sticky bottom-0 border-t border-line bg-surface/95 backdrop-blur-sm">
-        <LeadActionBar
-          status={lead.status}
-          localizationStatus={lead.localization_case?.status}
-          disabled={isExiting || localizationPending}
-          onDecide={handleDecide}
-          onLocate={handleLocate}
-          onCancelLocalization={handleCancelLocalization}
-        />
+        <LeadActionBar status={lead.status} disabled={disabled} onDecide={handleDecide} />
       </div>
     </div>
   );

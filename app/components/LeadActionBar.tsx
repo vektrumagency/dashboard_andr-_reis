@@ -43,51 +43,26 @@ const ACTIONS: {
     active: "bg-negative border-negative text-canvas",
     idle: "border-line-strong text-ink-muted hover:border-negative hover:text-negative hover:bg-negative/10",
   },
+  {
+    status: "locating",
+    label: "Localizar",
+    icon: MapPin,
+    active: "bg-accent border-accent text-canvas",
+    idle: "border-accent text-accent hover:bg-accent-soft",
+  },
 ];
 
 export function LeadActionBar({
   status,
-  localizationStatus,
   disabled,
   onDecide,
-  onLocate,
-  onCancelLocalization,
 }: {
   status: Lead["status"];
-  localizationStatus?: "processing" | "answered";
   disabled?: boolean;
   onDecide: (status: Lead["status"]) => void;
-  onLocate: () => void;
-  onCancelLocalization: () => void;
 }) {
-  if (status === "locating" && localizationStatus === "processing") {
-    return (
-      <div className="flex px-6 py-4">
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={onCancelLocalization}
-          className="w-full rounded-tile border border-line-strong py-2.5 text-xs font-semibold uppercase tracking-wide text-ink-muted transition-colors hover:bg-surface-hover disabled:cursor-wait disabled:opacity-50"
-        >
-          {disabled ? "A atualizar…" : "Cancelar pedido"}
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-wrap gap-2 px-6 py-4">
-      {status !== "locating" && (
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={onLocate}
-          className="flex min-w-32 flex-1 items-center justify-center gap-1.5 rounded-tile border border-accent py-2.5 text-xs font-semibold uppercase tracking-wide text-accent transition-colors hover:bg-accent-soft disabled:cursor-wait disabled:opacity-50"
-        >
-          <MapPin size={14} strokeWidth={2} />
-          {disabled ? "A enviar…" : "Localizar"}
-        </button>
-      )}
       {ACTIONS.map((action) => {
         const isActive = status === action.status;
         const Icon = action.icon;

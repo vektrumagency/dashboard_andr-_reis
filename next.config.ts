@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
         hostname: "img4.idealista.pt",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "st3v.idealista.pt",
+        pathname: "/**",
+      },
     ],
   },
   turbopack: {
