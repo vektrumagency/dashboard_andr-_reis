@@ -4,6 +4,16 @@ import { getDb } from "./mongodb";
 import { Lead } from "./types";
 
 const LEADS_COLLECTION = "leads";
+/** Própria do dashboard — não faz parte do schema do Luís. Populada por app/api/cron/cache-images. */
+const IMAGE_CACHE_COLLECTION = "image_cache";
+
+interface ImageCacheDoc {
+  leadId: string;
+  /** Índice 0-based em property.image_urls, alinhado com o usado em lib/derive/gallery.ts. */
+  index: number;
+  blobUrl: string;
+  cachedAt: string;
+}
 
 /**
  * O documento na Mongo usa _id (ObjectId), image_urls e latitude/longitude
@@ -95,6 +105,42 @@ const LIST_PIPELINE = [
 ] as const;
 
 /**
+ * Substitui, quando existir, o URL assinado do Idealista por um URL
+ * duradouro no Vercel Blob — populado por app/api/cron/cache-images.
+ * Falha aberta: sem entrada em cache mantém o URL original, ou seja o
+ * mesmo comportamento de sempre (incluindo o placeholder de "expirado" em
+ * PropertyImage) para imagens ainda não cacheadas.
+ */
+async function applyImageCache(leads: Lead[]): Promise<Lead[]> {
+  if (leads.length === 0) return leads;
+
+  const db = await getDb();
+  const cached = await db
+    .collection<ImageCacheDoc>(IMAGE_CACHE_COLLECTION)
+    .find({ leadId: { $in: leads.map((lead) => lead.id) } })
+    .toArray();
+  if (cached.length === 0) return leads;
+
+  const byLead = new Map<string, Map<number, string>>();
+  for (const doc of cached) {
+    if (!byLead.has(doc.leadId)) byLead.set(doc.leadId, new Map());
+    byLead.get(doc.leadId)!.set(doc.index, doc.blobUrl);
+  }
+
+  return leads.map((lead) => {
+    const byIndex = byLead.get(lead.id);
+    if (!byIndex) return lead;
+    return {
+      ...lead,
+      property: {
+        ...lead.property,
+        images: lead.property.images.map((url, index) => byIndex.get(index) ?? url),
+      },
+    };
+  });
+}
+
+/**
  * Vista de lista (tabela, sidebar, /atacar, /localizar, /mapa) — projetada
  * para não pagar o custo dos blocos de análise pesados nem das galerias
  * inteiras em superfícies que nunca os leem. cache() dedupe pedidos
@@ -106,7 +152,7 @@ export const getLeadsList = cache(async (): Promise<Lead[]> => {
     .collection<RawLead>(LEADS_COLLECTION)
     .aggregate<RawLead>([...LIST_PIPELINE])
     .toArray();
-  return raw.map(normalizeLead);
+  return applyImageCache(raw.map(normalizeLead));
 });
 
 /** Documento completo, para a rota de detalhe — sem projeção. */
@@ -114,7 +160,9 @@ export const getLead = cache(async (id: string): Promise<Lead | null> => {
   if (!ObjectId.isValid(id)) return null;
   const db = await getDb();
   const raw = await db.collection<RawLead>(LEADS_COLLECTION).findOne({ _id: new ObjectId(id) });
-  return raw ? normalizeLead(raw) : null;
+  if (!raw) return null;
+  const [lead] = await applyImageCache([normalizeLead(raw)]);
+  return lead;
 });
 
 export async function updateLeadStatus(id: string, status: Lead["status"]): Promise<Lead> {
