@@ -47,8 +47,13 @@ export function OutreachQueue({ leads }: { leads: Lead[] }) {
         const score = scoreTone(lead.score);
         const cover = lead.property.images[0];
         // ai_note.next_action está sempre vazio na BD real — mostrar em vez
-        // disso o primeiro motivo do briefing comercial, quando existe.
-        const context = briefingModel(lead)?.whyGoodLead[0]?.text ?? lead.monitor_reason;
+        // disso a síntese do briefing comercial. A vista de lista só traz
+        // commercial_overview do briefing (ver LIST_PIPELINE em lib/api.ts),
+        // por isso o fallback para a primeira secção só se aplica a
+        // documentos v1 antigos.
+        const model = briefingModel(lead);
+        const context =
+          model?.overview?.text ?? model?.sections[0]?.items[0]?.text ?? lead.monitor_reason;
         return (
           <div
             key={lead.id}

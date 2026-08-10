@@ -17,7 +17,9 @@ type Loose<T extends string> = T | (string & {});
 type Level = Loose<"high" | "medium" | "low" | "unknown">;
 
 // ---------------------------------------------------------------------------
-// commercial_briefing — substitui o extinto ai_note (0/10 preenchido)
+// commercial_briefing — substitui o extinto ai_note (0/10 preenchido).
+// Duas gerações coexistem no tipo: v1 (commercial_snapshot + interpretation,
+// morto na BD desde a migração para o generator v2) e v2 (briefing).
 // ---------------------------------------------------------------------------
 
 export interface BulletEvidence {
@@ -61,17 +63,61 @@ export interface FirstCallQuestion {
   snapshot_bullet_ids?: string[];
 }
 
+/**
+ * Forma v2 (`schema_version: "2.0"`, generator `commercial-briefing-v2`) —
+ * confirmada contra a Mongo real em 2026-08-10: os 60 documentos têm
+ * `commercial_briefing.briefing` preenchido e `commercial_snapshot` /
+ * `interpretation` (v1) a `null`. As dez chaves abaixo estavam presentes
+ * em todos.
+ *
+ * `evidence_ids` deixou de apontar para códigos de bullets (o snapshot
+ * v1) e passou a ser uma etiqueta de origem — `listing.property`,
+ * `market.benchmark`, `visual.assessment`, `visual.authenticity`,
+ * `property.intelligence`, `location.intelligence`. Ver
+ * evidenceSourceLabel em lib/derive/briefing.ts.
+ */
+export interface BriefingItem {
+  text: string;
+  confidence?: Level | null;
+  evidence_ids?: string[];
+  /** Só observado em owner_situations (ex: "developer"). */
+  category?: string | null;
+}
+
+export interface BriefingQuestion {
+  question: string;
+  purpose?: string | null;
+  evidence_ids?: string[];
+}
+
+export interface BriefingV2 {
+  commercial_overview?: BriefingItem | null;
+  property_market_diagnosis?: BriefingItem[];
+  owner_situations?: BriefingItem[];
+  commercial_relevance?: BriefingItem[];
+  strengths?: BriefingItem[];
+  risks_and_presentation?: BriefingItem[];
+  recommended_positioning?: BriefingItem[];
+  approach_angle?: BriefingItem[];
+  first_call_questions?: BriefingQuestion[];
+  uncertainties?: BriefingItem[];
+}
+
 export interface CommercialBriefing {
   schema_version?: string | null;
   generator_version?: string | null;
   generated_at?: string | null;
   source_fingerprint?: string | null;
   status?: Loose<"generated" | "failed" | "pending"> | null;
+  /** v2 — o que o backend gera hoje. */
+  briefing?: BriefingV2 | null;
+  /** v1 — `null` em toda a BD atual, mantido para documentos antigos. */
   commercial_snapshot?: {
     snapshot_version?: string | null;
     source_fingerprint?: string | null;
     bullets?: CommercialBullet[];
   } | null;
+  /** v1 — idem. */
   interpretation?: {
     owner_reading?: InterpretationItem[];
     why_good_lead?: InterpretationItem[];

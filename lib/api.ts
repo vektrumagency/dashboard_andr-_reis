@@ -44,9 +44,11 @@ function normalizeLead(raw: RawLead): Lead {
 
 /**
  * Excluídos da vista de lista: os blocos de análise mais pesados
- * (evidência extensa, arrays de ajustamento, planta detalhada) mais o
- * grosso da galeria de imagens — nada disto é lido pela tabela, pela
- * sidebar, por /atacar ou por /localizar, mas engordava o payload
+ * (evidência extensa, arrays de ajustamento, planta detalhada, o corpo do
+ * briefing comercial) mais o grosso da galeria de imagens — nada disto é
+ * lido pela tabela, pela sidebar, por /atacar ou por /localizar, com a
+ * excepção de `commercial_briefing.briefing.commercial_overview`, que
+ * /atacar mostra e por isso passa. Tudo o resto engordava o payload
  * enviado ao cliente em CADA navegação (app/layout.tsx despacha a lista
  * inteira para o LeadsProvider). O detalhe do lead usa getLead(id), que
  * não tem esta projeção — lê o documento completo.
@@ -79,7 +81,20 @@ const LIST_PIPELINE = [
   { $addFields: { "property.image_urls": { $slice: ["$property.image_urls", 1] } } },
   {
     $project: {
-      commercial_briefing: 0,
+      // Do briefing sobra só `commercial_overview` (um parágrafo) — é o
+      // que /atacar mostra em "Porquê agora". Antes excluía-se o bloco
+      // inteiro, o que fazia briefingModel() devolver sempre null ali.
+      "commercial_briefing.commercial_snapshot": 0,
+      "commercial_briefing.interpretation": 0,
+      "commercial_briefing.briefing.property_market_diagnosis": 0,
+      "commercial_briefing.briefing.owner_situations": 0,
+      "commercial_briefing.briefing.commercial_relevance": 0,
+      "commercial_briefing.briefing.strengths": 0,
+      "commercial_briefing.briefing.risks_and_presentation": 0,
+      "commercial_briefing.briefing.recommended_positioning": 0,
+      "commercial_briefing.briefing.approach_angle": 0,
+      "commercial_briefing.briefing.first_call_questions": 0,
+      "commercial_briefing.briefing.uncertainties": 0,
       "visual_authenticity_shadow.image_assessments": 0,
       "visual_authenticity_shadow.shadow_filtered_visual_assessment": 0,
       research_meta: 0,
