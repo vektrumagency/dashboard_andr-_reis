@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Sidebar } from "@/app/components/Sidebar";
 import { getLeadsList } from "@/lib/api";
 import { LeadsProvider } from "@/lib/leadsStore";
+import { PartnersProvider } from "@/lib/partnersStore";
+import { getPartnersList } from "@/lib/partnersApi";
 import "./globals.css";
 
 export const dynamic = "force-dynamic";
@@ -18,8 +20,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Dashboard de Leads — André Reis",
-  description: "Dashboard de geração e gestão de leads imobiliários",
+  title: "Dashboard — André Reis",
+  description: "Dashboard de leads imobiliários e parcerias",
 };
 
 export default async function RootLayout({
@@ -29,7 +31,7 @@ export default async function RootLayout({
   children: React.ReactNode;
   modal: React.ReactNode;
 }>) {
-  const leads = await getLeadsList();
+  const [leads, partners] = await Promise.all([getLeadsList(), getPartnersList()]);
 
   return (
     <html
@@ -38,9 +40,11 @@ export default async function RootLayout({
     >
       <body className="flex h-full bg-canvas text-ink">
         <LeadsProvider initialLeads={leads}>
-          <Sidebar />
-          <div className="flex-1 overflow-y-auto">{children}</div>
-          {modal}
+          <PartnersProvider initialPartners={partners}>
+            <Sidebar />
+            <div className="flex-1 overflow-y-auto">{children}</div>
+            {modal}
+          </PartnersProvider>
         </LeadsProvider>
       </body>
     </html>

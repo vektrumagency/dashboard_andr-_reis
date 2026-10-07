@@ -33,3 +33,8 @@ export async function getDb(): Promise<Db> {
   const client = await getClientPromise();
   return client.db(dbName);
 }
+
+export async function getPartnershipsDb(): Promise<Db> {
+  const client = await getClientPromise();
+  return client.db(process.env.PARTNERSHIPS_MONGODB_DB_NAME || "andre_reis_parcerias");
+}

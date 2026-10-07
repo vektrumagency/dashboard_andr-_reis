@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Diamond, LogOut, Mail, MapPinned, Mountain } from "lucide-react";
+import { Diamond, Handshake, LogOut, Mail, MapPinned, Mountain } from "lucide-react";
 import { ALL_STATUSES, STATUS_LABELS, marketsSummary } from "@/lib/leads";
 import { ALL } from "@/lib/leadQuery";
 import { useLeads } from "@/lib/leadsStore";
+import { usePartners } from "@/lib/partnersStore";
+import { PARTNER_STAGES, PARTNER_STAGE_LABELS } from "@/lib/partners";
+import { parsePartnerQuery, partnerIndexHref } from "@/lib/partnerQuery";
 
 const NAV_ITEMS = [
   { href: "/mapa", label: "Mapa", icon: Mountain },
@@ -17,8 +20,12 @@ export function Sidebar() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { leads } = useLeads();
+  const { partners } = usePartners();
   const onLeadsPage = pathname === "/";
   const activeStatus = onLeadsPage ? searchParams.get("status") : null;
+  const onPartnersPage = pathname.startsWith("/parceiros");
+  const activePartnerStage = onPartnersPage ? searchParams.get("stage") : null;
+  const partnerQuery = parsePartnerQuery(searchParams);
 
   if (pathname === "/login") return null;
 
@@ -104,6 +111,33 @@ export function Sidebar() {
             <span className="text-ink-faint">{locatingLeads.length}</span>
           </span>
         </Link>
+
+        <Link
+          href="/parceiros"
+          className={`mt-2 flex items-center gap-3 rounded-tile px-3 py-2 text-sm font-medium transition-colors ${
+            onPartnersPage && !activePartnerStage ? "bg-surface text-ink" : "text-ink-muted hover:bg-surface hover:text-ink"
+          }`}
+        >
+          <Handshake size={14} strokeWidth={2} className="text-ink-faint" />
+          Parceiros
+          <span className="ml-auto font-mono text-xs text-ink-faint">{partners.length}</span>
+        </Link>
+        <div className="ml-6 flex flex-col gap-0.5 border-l border-line pl-3">
+          {PARTNER_STAGES.map((stage) => (
+            <Link
+              key={stage}
+              href={partnerIndexHref({ ...partnerQuery, stage })}
+              className={`flex items-center gap-2 rounded-tile px-2 py-1.5 text-[13px] transition-colors ${
+                activePartnerStage === stage ? "bg-surface text-ink" : "text-ink-faint hover:bg-surface hover:text-ink-muted"
+              }`}
+            >
+              {PARTNER_STAGE_LABELS[stage]}
+              <span className="ml-auto font-mono text-[11px] text-ink-faint">
+                {partners.filter((partner) => partner.funnel_stage === stage).length}
+              </span>
+            </Link>
+          ))}
+        </div>
 
         {NAV_ITEMS.map((item) => {
           const active = pathname.startsWith(item.href);
