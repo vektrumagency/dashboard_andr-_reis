@@ -80,7 +80,7 @@ export function ContactChannel({ lead }: { lead: Lead }) {
         <button
           type="button"
           onClick={() => copy(message, "message")}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-tile bg-accent px-3 py-2 text-xs font-semibold uppercase tracking-wide text-canvas transition-colors hover:bg-accent-strong"
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-tile bg-accent px-3 py-2 text-xs font-semibold uppercase tracking-wide text-on-accent transition-colors hover:bg-accent-strong"
         >
           {copied === "message" ? <Check size={13} /> : <Copy size={13} />}
           {copied === "message" ? "Copiado" : "Copiar mensagem"}

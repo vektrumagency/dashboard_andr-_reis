@@ -7,7 +7,7 @@ import { Lead } from "@/lib/types";
 import { uniqueTypologies, uniqueZones } from "@/lib/leads";
 import { LeadQuery, SortKey, applyLeadQuery, leadQueryToSearchParams, parseLeadQuery } from "@/lib/leadQuery";
 import { LeadFilters } from "./LeadFilters";
-import { LeadRow, GRID_COLS } from "./LeadRow";
+import { LeadMobileCard, LeadRow, GRID_COLS } from "./LeadRow";
 
 /**
  * Todo o estado de filtragem/ordenação vive na URL (via lib/leadQuery),
@@ -42,9 +42,18 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <LeadFilters query={query} zones={zones} typologies={typologies} onChange={updateQuery} />
+      <div className="rounded-card border border-line bg-surface p-4 shadow-card">
+        <LeadFilters query={query} zones={zones} typologies={typologies} onChange={updateQuery} />
+      </div>
 
-      <div className="overflow-x-auto">
+      <p className="text-xs font-medium text-ink-muted">{filtered.length} {filtered.length === 1 ? "lead visível" : "leads visíveis"}</p>
+
+      <div className="flex flex-col gap-3 md:hidden">
+        {filtered.map((lead) => <LeadMobileCard key={lead.id} lead={lead} query={query} />)}
+        {filtered.length === 0 && <div className="rounded-card border border-dashed border-line-strong bg-surface px-4 py-8 text-center text-sm text-ink-muted">Nenhum lead corresponde aos filtros selecionados.</div>}
+      </div>
+
+      <div className="hidden overflow-x-auto md:block">
         <div className="min-w-[960px]">
           <div className={`grid ${GRID_COLS} gap-3 px-3 py-2 text-xs font-medium uppercase tracking-wide text-ink-faint`}>
             <span>Foto</span>

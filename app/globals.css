@@ -1,75 +1,99 @@
 @import "tailwindcss";
 
-/**
- * Tokens do dashboard — direção "dark premium". Só existe tema escuro
- * (decisão do cliente); não há bloco @media (prefers-color-scheme). Tudo
- * o que precisa de cor deve ler daqui, nunca voltar a hardcodar hex/zinc-*
- * espalhado pelos componentes — ver lib/tone.ts para os mapas semânticos
- * (prioridade, estado, score, polaridade) construídos sobre estas cores.
- *
- * NOTA para o Mapbox (app/components/LeadsMap.tsx): o SDK precisa de cores
- * cruas em JS, não consegue ler custom properties CSS em alguns contextos
- * (marker DOM criado imperativamente). lib/tone.ts espelha os matizes de
- * prioridade também como valores hex, com um comentário a apontar para cá —
- * é duplicação consciente, não um esquecimento.
- */
+/* Shared light workspace tokens. Map marker colors are mirrored in lib/tone.ts. */
 @theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
-  /* Superfícies — do fundo para o elemento mais "levantado" */
-  --color-canvas: #0a0a0d;
-  --color-surface: #16161b;
-  --color-surface-raised: #1e1e25;
-  --color-surface-sunken: #101013;
-  --color-surface-hover: #232329;
+  --color-canvas: #f6f4ef;
+  --color-surface: #ffffff;
+  --color-surface-raised: #fbfaf7;
+  --color-surface-sunken: #f0ede7;
+  --color-surface-hover: #f5f2ec;
 
   /* Linhas */
-  --color-line: rgba(255, 255, 255, 0.08);
-  --color-line-strong: rgba(255, 255, 255, 0.16);
+  --color-line: #e5e0d7;
+  --color-line-strong: #cec7bc;
 
   /* Texto */
-  --color-ink: #f4f4f5;
-  --color-ink-muted: #a1a1ab;
-  --color-ink-faint: #6c6c76;
+  --color-ink: #222a33;
+  --color-ink-muted: #525e68;
+  --color-ink-faint: #68737d;
+  --color-on-accent: #ffffff;
+  --color-on-media: #ffffff;
 
-  /* Acento — cyan é a cor Vektrum/Localizar; dourado é o acento premium */
-  --color-accent: #22d3ee;
-  --color-accent-strong: #06b6d4;
-  --color-accent-soft: rgba(34, 211, 238, 0.14);
-  --color-gold: #d8b46a;
-  --color-gold-strong: #c99a3f;
-  --color-gold-soft: rgba(216, 180, 106, 0.14);
+  --color-sidebar: #1c2731;
+  --color-sidebar-hover: #2b3945;
+  --color-sidebar-active: #354450;
+  --color-sidebar-ink: #f4f3ef;
+  --color-sidebar-muted: #b8c3ca;
+  --color-sidebar-faint: #9daab3;
+  --color-sidebar-line: #42515b;
+
+  --color-accent: #0d7085;
+  --color-accent-strong: #09576a;
+  --color-accent-soft: #e4f2f3;
+  --color-gold: #866329;
+  --color-gold-strong: #6c4c1b;
+  --color-gold-soft: #f6edd9;
 
   /* Polaridade — bullets do briefing, sinais, posição de mercado */
-  --color-positive: #34d399;
-  --color-positive-soft: rgba(52, 211, 153, 0.14);
-  --color-negative: #f87171;
-  --color-negative-soft: rgba(248, 113, 113, 0.14);
-  --color-warning: #fbbf24;
-  --color-warning-soft: rgba(251, 191, 36, 0.14);
-  --color-neutral: #9a9aa5;
-  --color-neutral-soft: rgba(154, 154, 165, 0.12);
+  --color-positive: #176b4a;
+  --color-positive-soft: #e5f3eb;
+  --color-negative: #b43d40;
+  --color-negative-soft: #fae9e8;
+  --color-warning: #8c6215;
+  --color-warning-soft: #fbf1d9;
+  --color-neutral: #66737d;
+  --color-neutral-soft: #edf0f0;
 
   /* Estado do lead (pipeline) */
-  --color-status-new: #60a5fa;
-  --color-status-saved: #34d399;
-  --color-status-contacted: #a78bfa;
-  --color-status-visit: #fb923c;
-  --color-status-locating: #22d3ee;
-  --color-status-not_relevant: #71717a;
+  --color-status-new: #2765ac;
+  --color-status-saved: #176b4a;
+  --color-status-contacted: #6846a6;
+  --color-status-visit: #a45820;
+  --color-status-locating: #0d7085;
+  --color-status-not_relevant: #58636d;
 
   /* Raios e elevação */
   --radius-tile: 0.75rem;
   --radius-card: 1.25rem;
   --radius-pill: 9999px;
-  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 20px 40px -20px rgba(0, 0, 0, 0.6);
-  --shadow-glow-accent: 0 0 0 1px rgba(34, 211, 238, 0.4), 0 0 24px rgba(34, 211, 238, 0.25);
-  --shadow-glow-gold: 0 0 0 1px rgba(216, 180, 106, 0.4), 0 0 24px rgba(216, 180, 106, 0.2);
+  --shadow-card: 0 12px 32px -22px rgba(33, 42, 51, 0.25), 0 2px 8px -5px rgba(33, 42, 51, 0.12);
+  --shadow-glow-accent: 0 0 0 2px rgba(13, 112, 133, 0.18);
+  --shadow-glow-gold: 0 0 0 2px rgba(134, 99, 41, 0.18);
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
+}
+
+@media (max-width: 1023px) {
+  body:has(#dashboard-sidebar) .dashboard-content {
+    padding-top: 4rem;
+  }
+}
+
+:where(a, button, input, select, textarea, [role="button"]):focus-visible {
+  outline: 2px solid var(--color-accent) !important;
+  outline-offset: 2px !important;
+}
+
+#dashboard-sidebar :where(a, button):focus-visible {
+  outline-color: #d8ba7a !important;
+}
+
+::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @keyframes fade-in {

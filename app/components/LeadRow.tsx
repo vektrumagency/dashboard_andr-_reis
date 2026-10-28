@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Lead } from "@/lib/types";
 import { formatArea, formatPrice, formatPricePerSqm, formatSignedPercent } from "@/lib/format";
 import { sellerDisplayName, formatMarketPosition } from "@/lib/leads";
@@ -16,7 +16,6 @@ import { LeadThumb } from "./LeadThumb";
 export const GRID_COLS = "grid-cols-[132px_1.3fr_0.85fr_0.9fr_1fr_88px_52px_1fr]";
 
 export function LeadRow({ lead, query }: { lead: Lead; query: LeadQuery }) {
-  const router = useRouter();
   const { property, seller } = lead;
   const facts = leadHeadlineFacts(lead);
   const factByKey = new Map(facts.map((f) => [f.key, f]));
@@ -29,14 +28,9 @@ export function LeadRow({ lead, query }: { lead: Lead; query: LeadQuery }) {
   const score = scoreTone(lead.score);
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={() => router.push(leadHref(lead.id, query))}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") router.push(leadHref(lead.id, query));
-      }}
-      className={`grid ${GRID_COLS} items-center gap-3 rounded-card border border-line bg-surface px-3 py-2.5 text-sm text-ink transition-colors hover:border-line-strong hover:bg-surface-hover cursor-pointer`}
+    <Link
+      href={leadHref(lead.id, query)}
+      className={`grid ${GRID_COLS} items-center gap-3 rounded-card border border-line bg-surface px-3 py-2.5 text-sm text-ink shadow-card transition-colors hover:border-line-strong hover:bg-surface-hover`}
     >
       <LeadThumb
         images={property.images}
@@ -114,6 +108,36 @@ export function LeadRow({ lead, query }: { lead: Lead; query: LeadQuery }) {
         <PriorityBadge priority={lead.priority} />
         <StatusBadge status={lead.status} />
       </div>
-    </div>
+    </Link>
+  );
+}
+
+export function LeadMobileCard({ lead, query }: { lead: Lead; query: LeadQuery }) {
+  const { property } = lead;
+  const score = scoreTone(lead.score);
+
+  return (
+    <Link href={leadHref(lead.id, query)}
+      className="block rounded-card border border-line bg-surface p-3 shadow-card transition-colors hover:border-line-strong hover:bg-surface-hover">
+      <div className="flex gap-3">
+        <div className="w-24 shrink-0 overflow-hidden rounded-tile"><LeadThumb images={property.images} photoCount={property.image_count}
+          likelyRenders={likelyContainsRenders(lead)} alt={property.title ?? property.zone ?? "Imóvel"} /></div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="truncate font-semibold text-ink">{property.zone || "Zona por confirmar"}</p>
+              <p className="truncate text-xs text-ink-muted">{[property.micro_zone, property.typology, formatArea(property.area_sqm)].filter(Boolean).join(" · ")}</p>
+            </div>
+            <span className={`shrink-0 rounded-pill bg-surface-sunken px-2 py-1 font-mono text-sm font-semibold ${score.text}`}>{lead.score}/10</span>
+          </div>
+          <p className="mt-2 text-sm font-semibold text-ink">{formatPrice(property.price_current)}</p>
+          <p className="text-xs text-ink-muted">{sellerDisplayName(lead.seller)}</p>
+        </div>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-1.5 border-t border-line pt-3">
+        <PriorityBadge priority={lead.priority} />
+        <StatusBadge status={lead.status} />
+      </div>
+    </Link>
   );
 }

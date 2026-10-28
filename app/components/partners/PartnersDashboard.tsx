@@ -56,10 +56,11 @@ export function PartnersDashboard() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-6 py-10">
+    <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-ink">Parceiros</h1>
+          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-gold">Relações estratégicas</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-ink">Parceiros</h1>
           <p className="text-sm text-ink-muted">{partners.length} parceiros qualificados · {visible.length} visíveis</p>
         </div>
         <div className="flex rounded-tile border border-line-strong bg-surface p-1" aria-label="Vista dos parceiros">
@@ -101,7 +102,25 @@ export function PartnersDashboard() {
       </div>
 
       {query.view === "table" ? (
-        <div className="overflow-x-auto">
+        <div className="space-y-3">
+          <div className="grid gap-3 md:hidden">
+            {visible.map((partner) => <article key={partner.id} className="rounded-card border border-line bg-surface p-4 shadow-card">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <Link href={partnerHref(partner.id, query)} className="block truncate text-base font-semibold text-ink hover:text-accent">{partner.company_name}</Link>
+                  <p className="mt-0.5 truncate text-xs text-ink-muted">{segmentLabel(partner.segment)}</p>
+                </div>
+                <span className="rounded-pill bg-gold-soft px-2.5 py-1 font-mono text-sm font-semibold text-gold">{partner.score_total}</span>
+              </div>
+              <p className="mt-3 truncate text-sm text-ink-muted">{partner.contact.name || partner.contact.business_email || "Sem contacto"}</p>
+              <div className="mt-3 flex items-end justify-between gap-3 border-t border-line pt-3">
+                <span className="text-xs text-ink-faint">Prioridade {partner.priority}</span>
+                <div className="min-w-36"><StageSelect partner={partner} compact /></div>
+              </div>
+            </article>)}
+            {visible.length === 0 && <EmptyState />}
+          </div>
+          <div className="hidden overflow-x-auto md:block">
           <div className="min-w-[860px]">
             <div className="grid grid-cols-[1.7fr_1fr_1.2fr_90px_86px_1fr] gap-3 px-4 py-2 text-xs font-medium uppercase tracking-wide text-ink-faint">
               <SortHeader label="Empresa" sort="company" query={query} onClick={toggleSort} />
@@ -127,6 +146,7 @@ export function PartnersDashboard() {
               className="mt-3 flex items-center gap-1 text-xs text-ink-faint hover:text-ink-muted">
               Ordenar por atualização {query.sort === "updated" ? query.dir === "asc" ? "↑" : "↓" : ""}
             </button>
+          </div>
           </div>
         </div>
       ) : (

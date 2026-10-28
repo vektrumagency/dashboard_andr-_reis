@@ -97,7 +97,7 @@ export function RecruitmentDetail({ candidate, query }: { candidate: Recruitment
             {selectedStage === "opted_out" && <p className="text-xs text-negative">Esta escolha bloqueia futuras mudanças de etapa e ações de contacto.</p>}
             {errors[candidate.id] && <p role="alert" className="text-xs text-negative">{errors[candidate.id]}</p>}
             <button type="submit" disabled={pending.has(candidate.id) || selectedStage === current.funnel_stage}
-              className="self-start rounded-tile bg-accent px-4 py-2 text-sm font-medium text-canvas hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50">
+              className="self-start rounded-tile bg-accent px-4 py-2 text-sm font-medium text-on-accent hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50">
               {pending.has(candidate.id) ? "A guardar…" : "Guardar etapa"}
             </button>
           </form>}

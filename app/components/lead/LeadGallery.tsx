@@ -85,7 +85,7 @@ export function LeadGallery({ lead }: { lead: Lead }) {
               type="button"
               onClick={() => goTo(activeIndex - 1)}
               aria-label="Foto anterior"
-              className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-pill bg-black/50 text-ink hover:bg-black/70"
+              className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-pill bg-black/60 text-on-media hover:bg-black/80"
             >
               ‹
             </button>
@@ -93,7 +93,7 @@ export function LeadGallery({ lead }: { lead: Lead }) {
               type="button"
               onClick={() => goTo(activeIndex + 1)}
               aria-label="Foto seguinte"
-              className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-pill bg-black/50 text-ink hover:bg-black/70"
+              className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-pill bg-black/60 text-on-media hover:bg-black/80"
             >
               ›
             </button>
@@ -105,13 +105,13 @@ export function LeadGallery({ lead }: { lead: Lead }) {
             <button
               type="button"
               onClick={() => goTo(floorPlans[0])}
-              className="flex items-center gap-1 rounded-pill bg-black/60 px-2.5 py-1 text-[11px] font-medium text-ink hover:bg-black/80"
+              className="flex items-center gap-1 rounded-pill bg-black/70 px-2.5 py-1 text-[11px] font-medium text-on-media hover:bg-black/85"
             >
               <LayoutGrid size={12} strokeWidth={2} />
               Planta
             </button>
           )}
-          <span className="flex items-center gap-1 rounded-pill bg-black/60 px-2.5 py-1 text-[11px] font-mono text-ink">
+          <span className="flex items-center gap-1 rounded-pill bg-black/70 px-2.5 py-1 text-[11px] font-mono text-on-media">
             <Camera size={12} strokeWidth={2} />
             {activeIndex + 1}/{images.length}
           </span>
@@ -125,7 +125,7 @@ export function LeadGallery({ lead }: { lead: Lead }) {
                 : "Fotografia"
             }
             className={`absolute left-3 top-3 flex items-center gap-1 rounded-pill px-2.5 py-1 text-[11px] font-medium ${
-              active.origin === "render" ? "bg-warning-soft text-warning" : "bg-black/60 text-ink-muted"
+              active.origin === "render" ? "bg-warning-soft text-warning" : "bg-black/70 text-on-media"
             }`}
           >
             {active.origin === "render" && <Wand2 size={12} strokeWidth={2} />}
@@ -161,7 +161,7 @@ export function LeadGallery({ lead }: { lead: Lead }) {
               )}
               {img.isFloorPlan && (
                 <span className="absolute bottom-0.5 right-0.5 rounded bg-black/70 p-0.5">
-                  <LayoutGrid size={9} className="text-ink" />
+                  <LayoutGrid size={9} className="text-on-media" />
                 </span>
               )}
             </button>

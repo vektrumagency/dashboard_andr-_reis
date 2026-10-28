@@ -8,7 +8,7 @@ export default function LocalizarError({ reset }: { reset: () => void }) {
       <button
         type="button"
         onClick={reset}
-        className="mt-5 rounded-tile bg-accent px-4 py-2 text-sm font-medium text-canvas"
+        className="mt-5 rounded-tile bg-accent px-4 py-2 text-sm font-medium text-on-accent"
       >
         Tentar novamente
       </button>

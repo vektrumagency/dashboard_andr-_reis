@@ -39,7 +39,7 @@ export function LeadsMap({ leads }: { leads: Lead[] }) {
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
-      style: "mapbox://styles/mapbox/satellite-streets-v12",
+      style: "mapbox://styles/mapbox/light-v11",
       center: DEFAULT_CENTER,
       zoom: 12.5,
     });
@@ -80,23 +80,23 @@ export function LeadsMap({ leads }: { leads: Lead[] }) {
 
   if (!process.env.NEXT_PUBLIC_MAPBOX_TOKEN) {
     return (
-      <div className="flex h-[32rem] items-center justify-center rounded-lg border border-dashed border-zinc-300 text-sm text-zinc-400">
+      <div className="flex h-[32rem] items-center justify-center rounded-card border border-dashed border-line-strong bg-surface text-sm text-ink-muted">
         Falta configurar NEXT_PUBLIC_MAPBOX_TOKEN
       </div>
     );
   }
 
   return (
-    <div className="relative h-[32rem] overflow-hidden rounded-lg border border-zinc-200">
+    <div className="relative h-[32rem] overflow-hidden rounded-card border border-line bg-surface shadow-card">
       <div ref={containerRef} className="h-full w-full" />
-      <div className="absolute bottom-4 left-4 flex flex-col gap-1.5 rounded-md bg-white/90 px-3 py-2 text-xs shadow-sm">
+      <div className="absolute bottom-4 left-4 flex flex-col gap-1.5 rounded-tile border border-line bg-surface/95 px-3 py-2 text-xs text-ink shadow-card backdrop-blur">
         {(["high", "medium", "low"] as const).map((priority) => (
           <div key={priority} className="flex items-center gap-2">
             <span
               className="h-2.5 w-2.5 rounded-full"
               style={{ backgroundColor: PIN_COLORS[priority] }}
             />
-            <span className="text-zinc-600">{PRIORITY_LABELS[priority]}</span>
+            <span className="text-ink-muted">{PRIORITY_LABELS[priority]}</span>
           </div>
         ))}
       </div>

@@ -25,7 +25,7 @@ export function LeadThumb({
     <div className="relative aspect-[16/10] w-full overflow-hidden rounded-tile bg-surface-sunken">
       <PropertyImage src={src} alt={alt} sizes="176px" />
       {!!photoCount && photoCount > 1 && (
-        <span className="absolute bottom-1 right-1 flex items-center gap-1 rounded-pill bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-ink">
+        <span className="absolute bottom-1 right-1 flex items-center gap-1 rounded-pill bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-on-media">
           <Images size={11} strokeWidth={2} />
           {photoCount}
         </span>

@@ -38,14 +38,14 @@ export default async function RootLayout({
   return (
     <html
       lang="pt-PT"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} min-h-full antialiased`}
     >
-      <body className="flex h-full bg-canvas text-ink">
+      <body className="flex min-h-dvh bg-canvas text-ink">
         <LeadsProvider initialLeads={leads}>
           <PartnersProvider initialPartners={partners}>
             <RecruitmentProvider initialCandidates={candidates}>
               <Sidebar />
-              <div className="flex-1 overflow-y-auto">{children}</div>
+              <div className="dashboard-content min-w-0 flex-1">{children}</div>
               {modal}
             </RecruitmentProvider>
           </PartnersProvider>

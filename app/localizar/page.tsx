@@ -16,10 +16,10 @@ export default function LocalizarPage() {
   const groups = useMemo(() => groupLocalizationLeads(leads), [leads]);
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10">
+    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-6 sm:px-6 lg:py-10">
       <div>
         <p className="font-mono text-xs uppercase tracking-widest text-accent">Vektrum</p>
-        <h1 className="text-2xl font-semibold text-ink">Localizar</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-ink">Localizar</h1>
         <p className="mt-1 text-sm text-ink-muted">
           {groups.processing.length} em processamento · {groups.answered.length} respondidos
         </p>
@@ -82,7 +82,7 @@ function LocalizationSection({
               <article
                 key={lead.id}
                 onClick={() => router.push(`/leads/${lead.id}`)}
-                className="cursor-pointer rounded-card border border-line bg-surface p-5 transition hover:-translate-y-0.5 hover:border-line-strong hover:shadow-card"
+                className="cursor-pointer rounded-card border border-line bg-surface p-4 shadow-card transition hover:-translate-y-0.5 hover:border-line-strong sm:p-5"
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>

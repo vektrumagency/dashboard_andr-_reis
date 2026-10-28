@@ -162,7 +162,7 @@ export function OutreachQueue({ leads }: { leads: Lead[] }) {
                       disabled={approved}
                       onClick={() => setApprovedIds((prev) => new Set(prev).add(lead.id))}
                       title="Marca a mensagem como pronta — não envia nada automaticamente"
-                      className="flex items-center gap-1.5 rounded-tile bg-positive px-4 py-1.5 text-sm font-medium text-canvas hover:opacity-90 disabled:cursor-default disabled:opacity-50"
+                      className="flex items-center gap-1.5 rounded-tile bg-positive px-4 py-1.5 text-sm font-medium text-on-accent hover:opacity-90 disabled:cursor-default disabled:opacity-50"
                     >
                       {approved ? <Check size={14} /> : <Bookmark size={14} />}
                       {approved ? "Marcada como aprovada" : "Marcar como aprovada"}

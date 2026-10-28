@@ -66,7 +66,7 @@ function StatusChips({
             onClick={() => onChange(status)}
             className={`rounded-pill px-3 py-1.5 text-xs font-medium transition-colors ${
               active
-                ? "bg-accent text-canvas"
+                ? "bg-accent text-on-accent"
                 : "border border-line-strong text-ink-muted hover:bg-surface-hover hover:text-ink"
             }`}
           >

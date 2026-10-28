@@ -26,10 +26,11 @@ export function RecruitmentDashboard() {
     router.replace(recruitmentIndexHref({ ...query, ...patch }));
   }
 
-  return <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-6 py-10">
+  return <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:py-10">
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="text-2xl font-semibold text-ink">Recrutamento</h1>
+        <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-gold">Talent pipeline</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-ink">Recrutamento</h1>
         <p className="mt-1 text-sm text-ink-muted">{candidates.length} candidatos pesquisados · {visible.length} visíveis</p>
       </div>
       <div className="flex rounded-tile border border-line-strong bg-surface p-1" aria-label="Vista dos candidatos">
@@ -65,7 +66,26 @@ export function RecruitmentDashboard() {
         options={[{ value: "score", label: "Score ↓" }, { value: "name", label: "Nome A–Z" }, { value: "updated", label: "Pesquisa recente" }, { value: "recontact", label: "Recontacto próximo" }]} />
     </div>
 
-    {query.view === "table" ? <div className="overflow-x-auto">
+    {query.view === "table" ? <div className="space-y-3">
+      <div className="grid gap-3 md:hidden">
+        {visible.map((item) => <Link key={item.id} href={recruitmentHref(item.id, query)}
+          className="rounded-card border border-line bg-surface p-4 shadow-card transition-colors hover:border-line-strong hover:bg-surface-hover">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="truncate font-semibold text-ink">{item.full_name || "Nome por confirmar"}</p>
+              <p className="mt-0.5 truncate text-xs text-ink-muted">{item.professional_role || item.current_affiliation || item.geographic_area || "Sem função indicada"}</p>
+            </div>
+            <span className="rounded-pill bg-gold-soft px-2.5 py-1 font-mono text-sm font-semibold text-gold">{item.score_total}</span>
+          </div>
+          <p className="mt-3 truncate text-sm text-ink-muted">{recruitmentSegmentLabel(item.segment)} · {contactSummary(item)}</p>
+          <div className="mt-3 flex items-center justify-between border-t border-line pt-3">
+            <StageBadge item={item} />
+            <span className="text-xs text-ink-faint">Prioridade {item.priority}</span>
+          </div>
+        </Link>)}
+        {visible.length === 0 && <EmptyState tab={query.tab} />}
+      </div>
+      <div className="hidden overflow-x-auto md:block">
       <div className="min-w-[850px]">
         <div className="grid grid-cols-[1.5fr_1.2fr_1fr_75px_65px_1fr] gap-3 px-4 py-2 text-xs font-medium uppercase tracking-wide text-ink-faint">
           <span>Candidato</span><span>Segmento</span><span>Contacto</span><span>Prior.</span><span>Score</span><span>Etapa</span>
@@ -82,6 +102,7 @@ export function RecruitmentDashboard() {
           </Link>)}
           {visible.length === 0 && <EmptyState tab={query.tab} />}
         </div>
+      </div>
       </div>
     </div> : <div className="overflow-x-auto pb-3">
       <div className="grid min-w-[1850px] grid-cols-11 gap-3">
