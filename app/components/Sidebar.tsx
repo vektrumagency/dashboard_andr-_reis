@@ -2,13 +2,16 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Diamond, Handshake, LogOut, Mail, MapPinned, Mountain } from "lucide-react";
+import { Diamond, Handshake, LogOut, Mail, MapPinned, Mountain, Users } from "lucide-react";
 import { ALL_STATUSES, STATUS_LABELS, marketsSummary } from "@/lib/leads";
 import { ALL } from "@/lib/leadQuery";
 import { useLeads } from "@/lib/leadsStore";
 import { usePartners } from "@/lib/partnersStore";
 import { PARTNER_STAGES, PARTNER_STAGE_LABELS } from "@/lib/partners";
 import { parsePartnerQuery, partnerIndexHref } from "@/lib/partnerQuery";
+import { useRecruitment } from "@/lib/recruitmentStore";
+import { RECRUITMENT_STAGES, RECRUITMENT_STAGE_LABELS, recruitmentTabFor } from "@/lib/recruitment";
+import { parseRecruitmentQuery, recruitmentIndexHref } from "@/lib/recruitmentQuery";
 
 const NAV_ITEMS = [
   { href: "/mapa", label: "Mapa", icon: Mountain },
@@ -21,11 +24,16 @@ export function Sidebar() {
   const searchParams = useSearchParams();
   const { leads } = useLeads();
   const { partners } = usePartners();
+  const { candidates } = useRecruitment();
   const onLeadsPage = pathname === "/";
   const activeStatus = onLeadsPage ? searchParams.get("status") : null;
   const onPartnersPage = pathname.startsWith("/parceiros");
   const activePartnerStage = onPartnersPage ? searchParams.get("stage") : null;
   const partnerQuery = parsePartnerQuery(searchParams);
+  const onRecruitmentPage = pathname.startsWith("/recrutamento");
+  const recruitmentQuery = parseRecruitmentQuery(searchParams);
+  const outreachCandidates = candidates.filter((candidate) => recruitmentTabFor(candidate) === "outreach");
+  const enrichmentCount = candidates.filter((candidate) => recruitmentTabFor(candidate) === "enrichment").length;
 
   if (pathname === "/login") return null;
 
@@ -42,7 +50,7 @@ export function Sidebar() {
   ).length;
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col bg-canvas px-4 py-6 text-ink-muted">
+    <aside className="flex h-full w-56 shrink-0 flex-col overflow-y-auto bg-canvas px-4 py-6 text-ink-muted">
       <div className="mb-8 px-2">
         <p className="font-mono text-xs uppercase tracking-widest text-ink-faint">Vektrum</p>
         <p className="text-sm font-semibold text-ink">André Reis</p>
@@ -137,6 +145,27 @@ export function Sidebar() {
               </span>
             </Link>
           ))}
+        </div>
+
+        <Link href="/recrutamento"
+          className={`mt-2 flex items-center gap-3 rounded-tile px-3 py-2 text-sm font-medium transition-colors ${onRecruitmentPage && recruitmentQuery.tab === "outreach" && recruitmentQuery.stage === "all" ? "bg-surface text-ink" : "text-ink-muted hover:bg-surface hover:text-ink"}`}>
+          <Users size={14} strokeWidth={2} className="text-ink-faint" />
+          Recrutamento
+          <span className="ml-auto font-mono text-xs text-ink-faint">{outreachCandidates.length}</span>
+        </Link>
+        <div className="ml-6 flex flex-col gap-0.5 border-l border-line pl-3">
+          {RECRUITMENT_STAGES.map((stage) => (
+            <Link key={stage} href={recruitmentIndexHref({ ...recruitmentQuery, tab: "outreach", stage })}
+              className={`flex items-center gap-2 rounded-tile px-2 py-1.5 text-[13px] transition-colors ${onRecruitmentPage && recruitmentQuery.tab === "outreach" && recruitmentQuery.stage === stage ? "bg-surface text-ink" : "text-ink-faint hover:bg-surface hover:text-ink-muted"}`}>
+              <span className="truncate">{RECRUITMENT_STAGE_LABELS[stage]}</span>
+              <span className="ml-auto font-mono text-[11px] text-ink-faint">{outreachCandidates.filter((candidate) => candidate.funnel_stage === stage).length}</span>
+            </Link>
+          ))}
+          <Link href={recruitmentIndexHref({ ...recruitmentQuery, tab: "enrichment", stage: "all" })}
+            className={`flex items-center gap-2 rounded-tile px-2 py-1.5 text-[13px] transition-colors ${onRecruitmentPage && recruitmentQuery.tab === "enrichment" ? "bg-surface text-ink" : "text-ink-faint hover:bg-surface hover:text-ink-muted"}`}>
+            <span className="truncate">Falta email/LinkedIn</span>
+            <span className="ml-auto font-mono text-[11px] text-ink-faint">{enrichmentCount}</span>
+          </Link>
         </div>
 
         {NAV_ITEMS.map((item) => {

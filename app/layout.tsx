@@ -5,6 +5,8 @@ import { getLeadsList } from "@/lib/api";
 import { LeadsProvider } from "@/lib/leadsStore";
 import { PartnersProvider } from "@/lib/partnersStore";
 import { getPartnersList } from "@/lib/partnersApi";
+import { RecruitmentProvider } from "@/lib/recruitmentStore";
+import { getRecruitmentList } from "@/lib/recruitmentApi";
 import "./globals.css";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +23,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Dashboard — André Reis",
-  description: "Dashboard de leads imobiliários e parcerias",
+  description: "Dashboard de leads imobiliários, parcerias e recrutamento",
 };
 
 export default async function RootLayout({
@@ -31,7 +33,7 @@ export default async function RootLayout({
   children: React.ReactNode;
   modal: React.ReactNode;
 }>) {
-  const [leads, partners] = await Promise.all([getLeadsList(), getPartnersList()]);
+  const [leads, partners, candidates] = await Promise.all([getLeadsList(), getPartnersList(), getRecruitmentList()]);
 
   return (
     <html
@@ -41,9 +43,11 @@ export default async function RootLayout({
       <body className="flex h-full bg-canvas text-ink">
         <LeadsProvider initialLeads={leads}>
           <PartnersProvider initialPartners={partners}>
-            <Sidebar />
-            <div className="flex-1 overflow-y-auto">{children}</div>
-            {modal}
+            <RecruitmentProvider initialCandidates={candidates}>
+              <Sidebar />
+              <div className="flex-1 overflow-y-auto">{children}</div>
+              {modal}
+            </RecruitmentProvider>
           </PartnersProvider>
         </LeadsProvider>
       </body>
