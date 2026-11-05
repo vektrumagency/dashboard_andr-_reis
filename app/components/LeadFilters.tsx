@@ -1,7 +1,8 @@
 "use client";
 
 import { ALL_PRIORITIES, PRIORITY_LABELS, STATUS_LABELS, ALL_STATUSES } from "@/lib/leads";
-import { ALL, LeadQuery } from "@/lib/leadQuery";
+import { ALL_MULTI_AGENCY_FILTERS } from "@/lib/derive/multiAgency";
+import { ALL, LeadQuery, MULTI_AGENCY_FILTER_LABELS } from "@/lib/leadQuery";
 import { LeadSearch } from "./LeadSearch";
 
 /**
@@ -39,6 +40,13 @@ export function LeadFilters({
             value={query.typology}
             onChange={(typology) => onChange({ typology })}
             options={typologies}
+          />
+          <Filter
+            label="Multi-agência"
+            value={query.multi}
+            onChange={(multi) => onChange({ multi: multi as LeadQuery["multi"] })}
+            options={ALL_MULTI_AGENCY_FILTERS}
+            labels={MULTI_AGENCY_FILTER_LABELS}
           />
         </div>
       </div>

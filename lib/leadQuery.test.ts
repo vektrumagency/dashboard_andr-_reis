@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { adjacentInQuery, applyLeadQuery, ALL, LeadQuery } from "./leadQuery";
+import {
+  adjacentInQuery,
+  applyLeadQuery,
+  ALL,
+  LeadQuery,
+  MULTI_AGENCY_FILTER_LABELS,
+  leadHref,
+  leadQueryToSearchParams,
+  leadsIndexHref,
+  parseLeadQuery,
+} from "./leadQuery";
+import { ALL_MULTI_AGENCY_FILTERS } from "./derive/multiAgency";
 import { Lead, Property, Seller } from "./types";
 
 function makeLead(id: string, overrides: Partial<Lead> = {}, propertyOverrides: Partial<Property> = {}): Lead {
@@ -63,6 +74,7 @@ const baseQuery: LeadQuery = {
   zone: ALL,
   priority: ALL,
   typology: ALL,
+  multi: ALL,
   sort: "score",
   dir: "desc",
 };
@@ -123,5 +135,63 @@ describe("adjacentInQuery", () => {
     expect(result.index).toBe(-1);
     expect(result.prevId).toBeNull();
     expect(result.nextId).toBeNull();
+  });
+});
+
+describe("filtro multi-agência", () => {
+  const leads = [
+    makeLead("conf", { multi_agency_likelihood: { level: "confirmed" } }),
+    makeLead("prob", { multi_agency_likelihood: { level: "probable" } }),
+    makeLead("unk", { multi_agency_likelihood: { level: "unknown" } }),
+    makeLead("unl", { multi_agency_likelihood: { level: "unlikely" } }),
+    makeLead("old-conf", { multi_agency_detection: { status: "confirmed", matched_agency: "ERA" } }),
+    makeLead("old-prob", { multi_agency_detection: { status: "no_match", different_advertiser_confirmed: true } }),
+    makeLead("old-none"),
+  ];
+  const ids = (multi: LeadQuery["multi"]) =>
+    applyLeadQuery(leads, { ...baseQuery, multi, sort: "score" }).map((l) => l.id).sort();
+
+  it("filtra por cada valor, incluindo leads sem o campo novo", () => {
+    expect(ids("confirmed")).toEqual(["conf", "old-conf"]);
+    expect(ids("probable")).toEqual(["old-prob", "prob"]);
+    expect(ids("confirmed_or_probable")).toEqual(["conf", "old-conf", "old-prob", "prob"]);
+    expect(ids("unlikely")).toEqual(["unl"]);
+    expect(ids("unknown")).toEqual(["old-none", "unk"]);
+    expect(ids(ALL)).toHaveLength(7);
+  });
+
+  it("ida e volta na URL", () => {
+    const query = parseLeadQuery(new URLSearchParams("multi=probable&status=Todas"));
+    expect(query.multi).toBe("probable");
+    expect(parseLeadQuery(leadQueryToSearchParams(query))).toEqual(query);
+  });
+
+  it("ida e volta na URL com unlikely, que tem rótulo PT-PT", () => {
+    const query = parseLeadQuery(new URLSearchParams("multi=unlikely"));
+    expect(query.multi).toBe("unlikely");
+    expect(leadQueryToSearchParams(query).get("multi")).toBe("unlikely");
+    expect(ALL_MULTI_AGENCY_FILTERS).toContain("unlikely");
+    expect(MULTI_AGENCY_FILTER_LABELS.unlikely).toBe("Exclusivo segundo o anúncio");
+  });
+
+  it("valor inválido volta a Todas", () => {
+    expect(parseLeadQuery(new URLSearchParams("multi=xyz")).multi).toBe(ALL);
+  });
+
+  it("a URL por omissão não inclui multi", () => {
+    expect(leadQueryToSearchParams(parseLeadQuery(new URLSearchParams())).has("multi")).toBe(false);
+  });
+
+  it("leadHref e leadsIndexHref preservam multi", () => {
+    const query = { ...baseQuery, status: "new" as const, multi: "probable" as const };
+    expect(leadHref("x", query)).toContain("multi=probable");
+    expect(leadsIndexHref(query)).toContain("multi=probable");
+  });
+
+  it("as setas ficam dentro do conjunto filtrado por multi", () => {
+    const query: LeadQuery = { ...baseQuery, multi: "confirmed" };
+    const result = adjacentInQuery(leads, query, "conf");
+    expect([result.prevId, result.nextId].filter(Boolean).sort()).toEqual(["old-conf"]);
+    expect(result.total).toBe(2);
   });
 });

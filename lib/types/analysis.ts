@@ -369,3 +369,33 @@ export interface PropertyIdentity {
   agencies?: string[];
   updated_at?: string | null;
 }
+
+// ---------------------------------------------------------------------------
+// multi_agency_likelihood — campo derivado pelo backend (Python, sem LLM).
+// Opcional: ausente/null quer dizer "não calculado" (≠ level "unknown"), e
+// nesse caso o dashboard cai no fallback em lib/derive/multiAgency.ts.
+// ---------------------------------------------------------------------------
+
+export type MultiAgencyLevel = "confirmed" | "probable" | "unlikely" | "unknown";
+
+export interface MultiAgencyLikelihoodReason {
+  source?: Loose<"photo_match" | "agency_rule" | "description_text"> | null;
+  code?: Loose<
+    | "photos_confirmed"
+    | "photos_different_advertiser"
+    | "agency_non_exclusive"
+    | "agency_usually_exclusive"
+    | "advertiser_looks_private"
+    | "text_non_exclusive"
+    | "text_exclusive"
+  > | null;
+  detail?: string | null;
+}
+
+export interface MultiAgencyLikelihood {
+  schema_version?: string | null;
+  level?: Loose<MultiAgencyLevel> | null;
+  reasons?: MultiAgencyLikelihoodReason[];
+  rules_version?: string | null;
+  computed_at?: string | null;
+}

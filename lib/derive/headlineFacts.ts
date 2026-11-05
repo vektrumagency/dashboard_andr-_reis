@@ -2,10 +2,13 @@ import { Building2, DoorOpen, Gem, Hammer, ShieldCheck, Sofa, type LucideIcon } 
 import { Lead } from "../types";
 import { Polarity, polarityTone, Tone } from "../tone";
 import { sellerDisplayName } from "../leads";
+import { currentLikelihood, matchedAgencies, multiAgencyLevel } from "./multiAgency";
 import {
   conditionLabel,
   furnitureStatusLabel,
   luxuryTierLabel,
+  multiAgencyLevelLabel,
+  multiAgencyLikelihoodReasonLabel,
   multiAgencyStatusLabel,
   occupancyLabel,
 } from "./enums";
@@ -28,50 +31,79 @@ export interface HeadlineFact {
   detail?: string | null;
 }
 
+/**
+ * De onde vem um "Provável": a razão mais específica ganha (texto > regra da agência > fotos).
+ * Sem razão reconhecida não se inventa origem; "fotos" exige prova por fotos.
+ */
+function probableOrigin(lead: Lead): string | null {
+  const likelihood = currentLikelihood(lead);
+  const reasons = likelihood?.reasons ?? [];
+  const byCode = (code: string) => reasons.find((r) => r.code === code);
+  if (byCode("text_non_exclusive")) return "descrição do anúncio";
+  const rule = byCode("agency_non_exclusive");
+  if (rule) return rule.detail ? `regra da agência (${rule.detail})` : "regra da agência";
+  if (byCode("photos_different_advertiser")) return "fotos";
+  if (!likelihood && lead.multi_agency_detection?.different_advertiser_confirmed === true) return "fotos";
+  return null;
+}
+
+function reasonsDetail(lead: Lead): string | null {
+  const labels = (currentLikelihood(lead)?.reasons ?? [])
+    .map((r) => {
+      const label = multiAgencyLikelihoodReasonLabel(r.code);
+      return label && r.detail ? `${label} (${r.detail})` : label;
+    })
+    .filter((label): label is string => label != null);
+  return labels.length > 0 ? labels.join("; ") : null;
+}
+
 function multiAgencyFact(lead: Lead): HeadlineFact | null {
   const detection = lead.multi_agency_detection;
-  if (!detection) return null;
+  const confidence = detection?.same_property_confidence ?? null;
+  const base = { key: "multi_agency", label: "Multi-agência", confidence, icon: Building2 };
 
-  // "skipped" significa que não se verificou nada — dizer "não" seria mentir.
-  if (detection.status === "skipped") return null;
-
-  const matched = detection.matched_agencies ?? [];
-  if (matched.length > 0) {
-    return {
-      key: "multi_agency",
-      label: "Multi-agência",
-      value: `Sim · ${matched.length} agência${matched.length > 1 ? "s" : ""}`,
-      tone: polarityTone("warning"),
-      confidence: detection.same_property_confidence ?? null,
-      icon: Building2,
-      detail: matched.join(", "),
-    };
+  // O rótulo vem sempre de multiAgencyLevel — a mesma função que o filtro usa.
+  switch (multiAgencyLevel(lead)) {
+    case "confirmed": {
+      const matched = matchedAgencies(lead);
+      return {
+        ...base,
+        value:
+          matched.length > 0
+            ? `${multiAgencyLevelLabel("confirmed")} · ${matched.length} agência${matched.length > 1 ? "s" : ""}`
+            : (multiAgencyLevelLabel("confirmed") ?? ""),
+        tone: polarityTone("warning"),
+        detail: matched.length > 0 ? matched.join(", ") : reasonsDetail(lead),
+      };
+    }
+    case "probable": {
+      const origin = probableOrigin(lead);
+      return {
+        ...base,
+        value: origin ? `${multiAgencyLevelLabel("probable")} · ${origin}` : (multiAgencyLevelLabel("probable") ?? ""),
+        tone: polarityTone("warning"),
+        detail: reasonsDetail(lead),
+      };
+    }
+    case "unlikely":
+      return {
+        ...base,
+        value: multiAgencyLevelLabel("unlikely") ?? "",
+        tone: polarityTone("neutral"),
+        detail: reasonsDetail(lead),
+      };
+    case "unknown":
+      // "skipped" significa que não se verificou nada — dizer "não" seria mentir.
+      if (detection?.status === "insufficient_evidence") {
+        return {
+          ...base,
+          value: "Sem indícios",
+          tone: polarityTone("neutral"),
+          detail: multiAgencyStatusLabel(detection.status),
+        };
+      }
+      return null;
   }
-
-  if (detection.different_advertiser_confirmed === true) {
-    return {
-      key: "multi_agency",
-      label: "Multi-agência",
-      value: "Provável",
-      tone: polarityTone("warning"),
-      confidence: detection.same_property_confidence ?? null,
-      icon: Building2,
-    };
-  }
-
-  if (detection.status === "insufficient_evidence") {
-    return {
-      key: "multi_agency",
-      label: "Multi-agência",
-      value: "Sem indícios",
-      tone: polarityTone("neutral"),
-      confidence: detection.same_property_confidence ?? null,
-      icon: Building2,
-      detail: multiAgencyStatusLabel(detection.status),
-    };
-  }
-
-  return null;
 }
 
 function furnitureFact(lead: Lead): HeadlineFact | null {

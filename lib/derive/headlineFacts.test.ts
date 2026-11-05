@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { leadHeadlineFacts } from "./headlineFacts";
 import { Lead, Property, Seller } from "../types";
+import { MultiAgencyLevel } from "../types/analysis";
+import { ALL_MULTI_AGENCY_FILTERS, multiAgencyLevel } from "./multiAgency";
+import { applyLeadQuery, parseLeadQuery } from "../leadQuery";
 
 function baseProperty(overrides: Partial<Property> = {}): Property {
   return {
@@ -127,4 +130,143 @@ describe("leadHeadlineFacts", () => {
     });
     expect(leadHeadlineFacts(lead).length).toBeLessThanOrEqual(6);
   });
+
+  describe("multi-agência", () => {
+    const factOf = (lead: Lead) => leadHeadlineFacts(lead).find((f) => f.key === "multi_agency");
+
+    it("confirmed do campo derivado", () => {
+      const fact = factOf(
+        baseLead({
+          multi_agency_likelihood: {
+            level: "confirmed",
+            reasons: [{ source: "photo_match", code: "photos_confirmed", detail: "ERA" }],
+          },
+          multi_agency_detection: { status: "confirmed", matched_agency: "ERA" },
+        }),
+      );
+      expect(fact?.value).toBe("Sim · 1 agência");
+      expect(fact?.detail).toBe("ERA");
+    });
+
+    it("probable por regra da agência mostra a origem", () => {
+      const fact = factOf(
+        baseLead({
+          multi_agency_likelihood: {
+            level: "probable",
+            reasons: [{ source: "agency_rule", code: "agency_non_exclusive", detail: "ERA" }],
+          },
+        }),
+      );
+      expect(fact?.value).toBe("Provável · regra da agência (ERA)");
+    });
+
+    it("probable por texto do anúncio vence a regra na origem", () => {
+      const fact = factOf(
+        baseLead({
+          multi_agency_likelihood: {
+            level: "probable",
+            reasons: [
+              { source: "agency_rule", code: "agency_non_exclusive", detail: "ERA" },
+              { source: "description_text", code: "text_non_exclusive" },
+            ],
+          },
+        }),
+      );
+      expect(fact?.value).toBe("Provável · descrição do anúncio");
+    });
+
+    it("unlikely mostra 'Exclusivo segundo o anúncio'", () => {
+      const fact = factOf(baseLead({ multi_agency_likelihood: { level: "unlikely", reasons: [] } }));
+      expect(fact?.value).toBe("Exclusivo segundo o anúncio");
+    });
+
+    it("unknown calculado esconde o facto, salvo evidência insuficiente", () => {
+      expect(factOf(baseLead({ multi_agency_likelihood: { level: "unknown", reasons: [] } }))).toBeUndefined();
+      const fact = factOf(
+        baseLead({
+          multi_agency_likelihood: { level: "unknown", reasons: [] },
+          multi_agency_detection: { status: "insufficient_evidence" },
+        }),
+      );
+      expect(fact?.value).toBe("Sem indícios");
+    });
+
+    it("fallback sem o campo: matched_agency singular dá 'Sim'", () => {
+      const fact = factOf(
+        baseLead({ multi_agency_detection: { status: "confirmed", matched_agency: "Century 21" } }),
+      );
+      expect(fact?.value).toBe("Sim · 1 agência");
+    });
+
+    it("fallback sem o campo: different_advertiser_confirmed sem confirmed dá 'Provável · fotos'", () => {
+      const fact = factOf(
+        baseLead({ multi_agency_detection: { status: "no_match", different_advertiser_confirmed: true } }),
+      );
+      expect(fact?.value).toBe("Provável · fotos");
+    });
+
+    it("lead sem nenhum dos campos continua a renderizar sem facto", () => {
+      expect(factOf(baseLead())).toBeUndefined();
+    });
+
+    it("'probable' sem razões não inventa 'fotos' como origem", () => {
+      expect(factOf(baseLead({ multi_agency_likelihood: { level: "probable", reasons: [] } }))?.value).toBe("Provável");
+      const unknownReason = baseLead({
+        multi_agency_likelihood: { level: "probable", reasons: [{ code: "novo" }] },
+      });
+      expect(factOf(unknownReason)?.value).toBe("Provável");
+      const photos = baseLead({
+        multi_agency_likelihood: { level: "probable", reasons: [{ code: "photos_different_advertiser" }] },
+      });
+      expect(factOf(photos)?.value).toBe("Provável · fotos");
+    });
+
+    it("likelihood mais antiga que a deteção por fotos cai no fallback das fotos", () => {
+      const lead = baseLead({
+        multi_agency_likelihood: { level: "unknown", computed_at: "2026-11-01T00:00:00Z" },
+        multi_agency_detection: {
+          status: "confirmed",
+          matched_agencies: ["A"],
+          checked_at: "2026-11-02T00:00:00Z",
+        },
+      });
+      expect(multiAgencyLevel(lead)).toBe("confirmed");
+      expect(factOf(lead)?.value).toBe("Sim · 1 agência");
+    });
+
+    it("o facto e o filtro dão a mesma categoria para o mesmo lead", () => {
+      const leads = [
+        baseLead({ multi_agency_likelihood: { level: "confirmed" } }),
+        baseLead({ multi_agency_likelihood: { level: "probable", reasons: [] } }),
+        baseLead({ multi_agency_likelihood: { level: "unlikely" } }),
+        baseLead({ multi_agency_likelihood: { level: "unknown" } }),
+        baseLead({
+          multi_agency_likelihood: { level: "unknown", computed_at: "2026-11-01T00:00:00Z" },
+          multi_agency_detection: { status: "confirmed", matched_agencies: ["A"], checked_at: "2026-11-02T00:00:00Z" },
+        }),
+        baseLead({ multi_agency_detection: { status: "confirmed", matched_agencies: ["A"] } }),
+        baseLead({ multi_agency_detection: { status: "no_match", different_advertiser_confirmed: true } }),
+        baseLead({ multi_agency_detection: { status: "skipped" } }),
+        baseLead(),
+      ];
+      const shownAs: Record<string, MultiAgencyLevel> = {
+        Sim: "confirmed",
+        "Provável": "probable",
+        Exclusivo: "unlikely",
+      };
+      for (const lead of leads) {
+        const value = factOf(lead)?.value;
+        // Sem facto ou "Sem indícios" só acontece em "unknown".
+        const shown = (value ? shownAs[value.split(" ")[0]] : undefined) ?? "unknown";
+        // O filtro real (applyLeadQuery) tem de devolver o lead exatamente nos filtros do nível mostrado.
+        for (const multi of ALL_MULTI_AGENCY_FILTERS) {
+          const included = applyLeadQuery([lead], { ...parseLeadQuery(new URLSearchParams()), multi }).length === 1;
+          const expected = multi === "confirmed_or_probable" ? shown === "confirmed" || shown === "probable" : multi === shown;
+          expect(included, `${multi} vs ${shown}`).toBe(expected);
+        }
+        expect(multiAgencyLevel(lead)).toBe(shown);
+      }
+    });
+  });
 });
+

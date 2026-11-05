@@ -13,6 +13,7 @@ import {
   LocationIntelligence,
   MarketAdjustment,
   MultiAgencyDetection,
+  MultiAgencyLikelihood,
   PropertyIdentity,
   PropertyIntelligence,
   QualitativeFactor,
@@ -220,6 +221,8 @@ export interface Lead {
   property_intelligence?: PropertyIntelligence | null;
   location_intelligence?: LocationIntelligence | null;
   multi_agency_detection?: MultiAgencyDetection | null;
+  /** Derivado no backend; ausente em leads antigos — ver lib/derive/multiAgency.ts. */
+  multi_agency_likelihood?: MultiAgencyLikelihood | null;
   research_meta?: ResearchMeta | null;
   property_identity?: PropertyIdentity | null;
 }

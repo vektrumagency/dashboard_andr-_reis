@@ -79,6 +79,31 @@ export function multiAgencyReasonLabel(value: string | null | undefined): string
   return labelOf(MULTI_AGENCY_REASON_LABELS, value, "Motivo");
 }
 
+const MULTI_AGENCY_LEVEL_LABELS = {
+  confirmed: "Sim",
+  probable: "Provável",
+  unlikely: "Exclusivo segundo o anúncio",
+  unknown: "Desconhecido",
+} as const;
+
+export function multiAgencyLevelLabel(value: string | null | undefined): string | null {
+  return labelOf(MULTI_AGENCY_LEVEL_LABELS, value, "Nível");
+}
+
+const MULTI_AGENCY_LIKELIHOOD_REASON_LABELS = {
+  photos_confirmed: "Fotografias coincidem com outro anúncio",
+  photos_different_advertiser: "Fotografias com outro anunciante",
+  agency_non_exclusive: "Agência sem exclusividade",
+  agency_usually_exclusive: "Agência normalmente com exclusividade",
+  advertiser_looks_private: "Anunciante parece particular",
+  text_non_exclusive: "Descrição indica não exclusividade",
+  text_exclusive: "Descrição indica exclusividade",
+} as const;
+
+export function multiAgencyLikelihoodReasonLabel(value: string | null | undefined): string | null {
+  return labelOf(MULTI_AGENCY_LIKELIHOOD_REASON_LABELS, value, "Razão");
+}
+
 const PRICE_BAND_POSITION_LABELS = {
   within_band: "Dentro da banda",
   below_band: "Abaixo da banda",

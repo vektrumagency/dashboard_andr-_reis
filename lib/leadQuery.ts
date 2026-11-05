@@ -1,4 +1,9 @@
 import { Lead, LeadPriority, LeadStatus } from "./types";
+import {
+  ALL_MULTI_AGENCY_FILTERS,
+  MultiAgencyFilter,
+  matchesMultiAgencyFilter,
+} from "./derive/multiAgency";
 import { ALL_PRIORITIES, ALL_STATUSES, searchLeads, uniqueTypologies, uniqueZones } from "./leads";
 
 /**
@@ -27,6 +32,15 @@ export const SORT_LABELS: Record<SortKey, string> = {
 
 export const ALL_SORT_KEYS: SortKey[] = ["score", "price", "price_per_sqm", "price_vs_market", "area"];
 
+/** Rótulos PT-PT do filtro "Multi-agência"; na URL vão os valores em inglês. */
+export const MULTI_AGENCY_FILTER_LABELS: Record<MultiAgencyFilter, string> = {
+  confirmed_or_probable: "Sim ou provável",
+  confirmed: "Sim",
+  probable: "Provável",
+  unlikely: "Exclusivo segundo o anúncio",
+  unknown: "Desconhecido",
+};
+
 export type SortDir = "asc" | "desc";
 
 export interface LeadQuery {
@@ -35,6 +49,7 @@ export interface LeadQuery {
   zone: string;
   priority: LeadPriority | typeof ALL;
   typology: string;
+  multi: MultiAgencyFilter | typeof ALL;
   sort: SortKey;
   dir: SortDir;
 }
@@ -45,6 +60,7 @@ const DEFAULT_QUERY: LeadQuery = {
   zone: ALL,
   priority: ALL,
   typology: ALL,
+  multi: ALL,
   sort: "score",
   dir: "desc",
 };
@@ -54,6 +70,7 @@ type ParamSource = URLSearchParams | Pick<URLSearchParams, "get">;
 export function parseLeadQuery(params: ParamSource): LeadQuery {
   const status = params.get("status");
   const priority = params.get("priority");
+  const multi = params.get("multi");
   const sort = params.get("sort");
   const dir = params.get("dir");
 
@@ -69,6 +86,10 @@ export function parseLeadQuery(params: ParamSource): LeadQuery {
         ? (priority as LeadPriority | typeof ALL)
         : DEFAULT_QUERY.priority,
     typology: params.get("typology") ?? DEFAULT_QUERY.typology,
+    multi:
+      multi && ALL_MULTI_AGENCY_FILTERS.includes(multi as MultiAgencyFilter)
+        ? (multi as MultiAgencyFilter)
+        : DEFAULT_QUERY.multi,
     sort: sort && ALL_SORT_KEYS.includes(sort as SortKey) ? (sort as SortKey) : DEFAULT_QUERY.sort,
     dir: dir === "asc" ? "asc" : DEFAULT_QUERY.dir,
   };
@@ -82,6 +103,7 @@ export function leadQueryToSearchParams(query: LeadQuery): URLSearchParams {
   if (query.zone !== ALL) params.set("zone", query.zone);
   if (query.priority !== ALL) params.set("priority", query.priority);
   if (query.typology !== ALL) params.set("typology", query.typology);
+  if (query.multi !== ALL) params.set("multi", query.multi);
   if (query.sort !== DEFAULT_QUERY.sort) params.set("sort", query.sort);
   if (query.dir !== DEFAULT_QUERY.dir) params.set("dir", query.dir);
   return params;
@@ -107,7 +129,8 @@ export function applyLeadQuery(leads: Lead[], query: LeadQuery): Lead[] {
     .filter((lead) => query.zone === ALL || lead.property.zone === query.zone)
     .filter((lead) => query.priority === ALL || lead.priority === query.priority)
     .filter((lead) => query.status === ALL || lead.status === query.status)
-    .filter((lead) => query.typology === ALL || lead.property.typology === query.typology);
+    .filter((lead) => query.typology === ALL || lead.property.typology === query.typology)
+    .filter((lead) => query.multi === ALL || matchesMultiAgencyFilter(lead, query.multi));
 
   const sign = query.dir === "asc" ? 1 : -1;
   return [...filtered].sort((a, b) => sign * (sortValue(a, query.sort) - sortValue(b, query.sort)));
