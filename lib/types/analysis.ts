@@ -303,6 +303,31 @@ export interface MultiAgencyDetection {
   llm_assessment?: string | null;
   checked_at?: string | null;
   score_adjustment?: number | null;
+  /**
+   * Cluster do inventário a que o anúncio pertence (property_cluster_service
+   * no backend): "multi_agency" = 2+ anunciantes distintos; "relisted" = 2+
+   * anúncios do mesmo anunciante.
+   */
+  cluster_kind?: Loose<"multi_agency" | "relisted"> | null;
+  cluster_listing_count?: number | null;
+  cluster_advertiser_count?: number | null;
+  cluster_price_min?: number | null;
+  cluster_price_max?: number | null;
+  private_seller_in_cluster?: boolean | null;
+}
+
+/** Forma provisória — o backend ainda não escreve este objecto; todos os campos são opcionais. */
+export interface PropertyCluster {
+  id?: string | null;
+  kind?: Loose<"multi_agency" | "relisted"> | null;
+  listing_ids?: string[];
+  listing_urls?: string[];
+  agencies?: string[];
+  advertiser_keys?: string[];
+  listing_count?: number | null;
+  advertiser_count?: number | null;
+  price_min?: number | null;
+  price_max?: number | null;
 }
 
 // ---------------------------------------------------------------------------

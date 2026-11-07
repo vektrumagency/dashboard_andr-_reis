@@ -4,8 +4,16 @@ import { useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Lead } from "@/lib/types";
-import { uniqueTypologies, uniqueZones } from "@/lib/leads";
-import { LeadQuery, SortKey, applyLeadQuery, leadQueryToSearchParams, parseLeadQuery } from "@/lib/leadQuery";
+import { uniqueTypologies } from "@/lib/leads";
+import {
+  ALL,
+  LeadQuery,
+  SortKey,
+  applyLeadQuery,
+  leadQueryToSearchParams,
+  parseLeadQuery,
+  zoneOptions,
+} from "@/lib/leadQuery";
 import { LeadFilters } from "./LeadFilters";
 import { LeadMobileCard, LeadRow, GRID_COLS } from "./LeadRow";
 
@@ -20,14 +28,19 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
   const searchParams = useSearchParams();
   const query = useMemo(() => parseLeadQuery(searchParams), [searchParams]);
 
-  const zones = useMemo(() => uniqueZones(leads), [leads]);
+  const zones = useMemo(() => zoneOptions(leads, query), [leads, query]);
   const typologies = useMemo(() => uniqueTypologies(leads), [leads]);
   const filtered = useMemo(() => applyLeadQuery(leads, query), [leads, query]);
 
   function updateQuery(patch: Partial<LeadQuery>) {
     // replace, não push — cada tecla na pesquisa ou troca de filtro não
     // deve empilhar uma entrada de histórico própria.
-    const next = leadQueryToSearchParams({ ...query, ...patch });
+    const merged = { ...query, ...patch };
+    // Trocar de mercado limpa a zona — a zona antiga pode não existir no novo mercado.
+    if (patch.market !== undefined && patch.market !== query.market && patch.zone === undefined) {
+      merged.zone = ALL;
+    }
+    const next = leadQueryToSearchParams(merged);
     const qs = next.toString();
     router.replace(qs ? `/?${qs}` : "/");
   }
@@ -60,7 +73,7 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
             <span>Imóvel</span>
             <SortableHeader label="Preço" sortKey="price" query={query} onSort={toggleSort} />
             <SortableHeader label="Mercado" sortKey="price_vs_market" query={query} onSort={toggleSort} />
-            <span>Agência</span>
+            <SortableHeader label="Agência" sortKey="multi_agency" query={query} onSort={toggleSort} />
             <span>Estado do imóvel</span>
             <SortableHeader label="Score" sortKey="score" query={query} onSort={toggleSort} />
             <span>Estado</span>

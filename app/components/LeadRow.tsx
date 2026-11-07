@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { Lead } from "@/lib/types";
 import { formatArea, formatPrice, formatPricePerSqm, formatSignedPercent } from "@/lib/format";
-import { sellerDisplayName, formatMarketPosition } from "@/lib/leads";
+import { Building2 } from "lucide-react";
+import { MultiAgencyInfo, sellerDisplayName, formatMarketPosition, multiAgencyInfo } from "@/lib/leads";
 import { LeadQuery, leadHref } from "@/lib/leadQuery";
 import { marketPositionTone, scoreTone } from "@/lib/tone";
 import { leadHeadlineFacts } from "@/lib/derive/headlineFacts";
@@ -23,6 +24,7 @@ export function LeadRow({ lead, query }: { lead: Lead; query: LeadQuery }) {
   const occupancy = factByKey.get("occupancy");
   const condition = factByKey.get("condition");
   const multiAgency = factByKey.get("multi_agency");
+  const confirmedMulti = multiAgencyInfo(lead);
   const luxuryTier = luxuryTierLabel(lead.property_intelligence?.luxury_tier);
   const marketTone = marketPositionTone(property.price_market_position);
   const score = scoreTone(lead.score);
@@ -76,7 +78,9 @@ export function LeadRow({ lead, query }: { lead: Lead; query: LeadQuery }) {
 
       <div className="min-w-0">
         <p className="truncate text-ink-muted">{sellerDisplayName(seller)}</p>
-        {multiAgency && (
+        {confirmedMulti ? (
+          <MultiAgencyBadge info={confirmedMulti} />
+        ) : multiAgency && (
           <p className={`text-xs ${multiAgency.tone.text}`}>{multiAgency.value}</p>
         )}
       </div>
@@ -115,6 +119,7 @@ export function LeadRow({ lead, query }: { lead: Lead; query: LeadQuery }) {
 export function LeadMobileCard({ lead, query }: { lead: Lead; query: LeadQuery }) {
   const { property } = lead;
   const score = scoreTone(lead.score);
+  const multi = multiAgencyInfo(lead);
 
   return (
     <Link href={leadHref(lead.id, query)}
@@ -132,6 +137,7 @@ export function LeadMobileCard({ lead, query }: { lead: Lead; query: LeadQuery }
           </div>
           <p className="mt-2 text-sm font-semibold text-ink">{formatPrice(property.price_current)}</p>
           <p className="text-xs text-ink-muted">{sellerDisplayName(lead.seller)}</p>
+          {multi && <MultiAgencyBadge info={multi} />}
         </div>
       </div>
       <div className="mt-3 flex flex-wrap gap-1.5 border-t border-line pt-3">
@@ -139,5 +145,23 @@ export function LeadMobileCard({ lead, query }: { lead: Lead; query: LeadQuery }
         <StatusBadge status={lead.status} />
       </div>
     </Link>
+  );
+}
+
+/** Badge "N agências" com os nomes — só para multi-agência confirmado (ver multiAgencyInfo). */
+export function MultiAgencyBadge({ info }: { info: MultiAgencyInfo }) {
+  const count = `${info.agencyCount} agência${info.agencyCount === 1 ? "" : "s"}`;
+  const names = info.agencies.join(", ");
+  return (
+    <div
+      title={names ? `${count}: ${names} · ${info.listingCount} anúncios` : `${count} · ${info.listingCount} anúncios`}
+      className="mt-1 min-w-0"
+    >
+      <span className="inline-flex items-center gap-1 rounded-pill bg-gold-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gold">
+        <Building2 size={11} strokeWidth={2.25} />
+        Multi-agência · {count}
+      </span>
+      {names && <p className="mt-0.5 truncate text-[11px] text-ink-muted">{names}</p>}
+    </div>
   );
 }

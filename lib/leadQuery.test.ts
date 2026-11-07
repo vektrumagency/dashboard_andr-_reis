@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { adjacentInQuery, applyLeadQuery, ALL, LeadQuery } from "./leadQuery";
+import {
+  adjacentInQuery,
+  applyLeadQuery,
+  ALL,
+  LeadQuery,
+  leadQueryToSearchParams,
+  parseLeadQuery,
+  zoneOptions,
+} from "./leadQuery";
 import { Lead, Property, Seller } from "./types";
 
 function makeLead(id: string, overrides: Partial<Lead> = {}, propertyOverrides: Partial<Property> = {}): Lead {
@@ -60,7 +68,9 @@ function makeLead(id: string, overrides: Partial<Lead> = {}, propertyOverrides: 
 const baseQuery: LeadQuery = {
   q: "",
   status: ALL,
+  market: ALL,
   zone: ALL,
+  multiAgency: false,
   priority: ALL,
   typology: ALL,
   sort: "score",
@@ -123,5 +133,98 @@ describe("adjacentInQuery", () => {
     expect(result.index).toBe(-1);
     expect(result.prevId).toBeNull();
     expect(result.nextId).toBeNull();
+  });
+});
+
+const confirmed = (agencies: string[], extra: Record<string, unknown> = {}): Partial<Lead> => ({
+  multi_agency_detection: {
+    status: "confirmed",
+    matched_agencies: agencies,
+    matched_listing_ids: agencies.map((_, i) => `listing-${i}`),
+    ...extra,
+  },
+});
+
+describe("filtro de mercado", () => {
+  const leads = [
+    makeLead("lx", { market: "lisboa" }, { zone: "Estrela / Lapa" }),
+    makeLead("belem-hist", { market: "belem_restelo" }, { zone: "Belém / Restelo" }),
+    makeLead("cas", { market: "cascais" }, { zone: "Birre" }),
+    makeLead("oei", { market: "oeiras" }, { zone: "Linda-a-Velha" }),
+    makeLead("alges-hist", { market: "alges_arredores" }, { zone: "Algés / Dafundo / Cruz Quebrada" }),
+    makeLead("ama", { market: "amadora" }, { zone: "Alfragide" }),
+  ];
+
+  it("Lisboa inclui os leads históricos de Belém/Restelo", () => {
+    const result = applyLeadQuery(leads, { ...baseQuery, market: "lisboa" });
+    expect(result.map((l) => l.id).sort()).toEqual(["belem-hist", "lx"]);
+  });
+
+  it("Oeiras inclui os leads históricos de Algés", () => {
+    const result = applyLeadQuery(leads, { ...baseQuery, market: "oeiras" });
+    expect(result.map((l) => l.id).sort()).toEqual(["alges-hist", "oei"]);
+  });
+
+  it("Amadora e Cascais só mostram os seus leads", () => {
+    expect(applyLeadQuery(leads, { ...baseQuery, market: "amadora" }).map((l) => l.id)).toEqual(["ama"]);
+    expect(applyLeadQuery(leads, { ...baseQuery, market: "cascais" }).map((l) => l.id)).toEqual(["cas"]);
+  });
+
+  it("as zonas do filtro ficam limitadas ao mercado, com Belém/Restelo em Lisboa", () => {
+    expect(zoneOptions(leads, { ...baseQuery, market: "lisboa" })).toEqual(["Belém / Restelo", "Estrela / Lapa"]);
+    expect(zoneOptions(leads, baseQuery)).toHaveLength(6);
+  });
+
+  it("lê e escreve o mercado na URL, e ignora mercados históricos ou desconhecidos", () => {
+    expect(parseLeadQuery(new URLSearchParams("market=oeiras")).market).toBe("oeiras");
+    expect(parseLeadQuery(new URLSearchParams("market=belem_restelo")).market).toBe(ALL);
+    expect(parseLeadQuery(new URLSearchParams("market=porto")).market).toBe(ALL);
+    expect(leadQueryToSearchParams({ ...baseQuery, market: "amadora" }).get("market")).toBe("amadora");
+  });
+});
+
+describe("multi-agência", () => {
+  const leads = [
+    makeLead("solo-alto", { score: 9 }),
+    makeLead("multi-2", { score: 4, ...confirmed(["ERA"]) }),
+    makeLead("multi-3", { score: 3, ...confirmed(["ERA", "Remax", "Century 21"]) }),
+    makeLead("provavel", {
+      score: 8,
+      multi_agency_detection: { status: "insufficient_evidence", different_advertiser_confirmed: true },
+    }),
+    makeLead("cluster", {
+      score: 2,
+      multi_agency_detection: { status: "no_match", cluster_kind: "multi_agency", cluster_advertiser_count: 2 },
+    }),
+  ];
+
+  it("o filtro só deixa passar multi-agência confirmados", () => {
+    const result = applyLeadQuery(leads, { ...baseQuery, multiAgency: true });
+    expect(result.map((l) => l.id).sort()).toEqual(["cluster", "multi-2", "multi-3"]);
+  });
+
+  it("aceita um property_cluster opcional com kind multi_agency", () => {
+    const lead = makeLead("pc", { property_cluster: { kind: "multi_agency", agencies: ["ERA", "Remax"] } });
+    expect(applyLeadQuery([lead], { ...baseQuery, multiAgency: true })).toHaveLength(1);
+  });
+
+  it("a ordenação por omissão põe os multi-agência confirmados primeiro", () => {
+    const query = parseLeadQuery(new URLSearchParams("status=Todas"));
+    expect(query.sort).toBe("multi_agency");
+    const result = applyLeadQuery(leads, query);
+    // Mais agências primeiro, depois por score; os restantes seguem por score.
+    expect(result.map((l) => l.id)).toEqual(["multi-3", "multi-2", "cluster", "solo-alto", "provavel"]);
+  });
+
+  it("ordenar por score ignora a prioridade multi-agência", () => {
+    const result = applyLeadQuery(leads, { ...baseQuery, sort: "score" });
+    expect(result[0].id).toBe("solo-alto");
+  });
+
+  it("guarda o filtro na URL como multi=1", () => {
+    const params = leadQueryToSearchParams({ ...baseQuery, multiAgency: true });
+    expect(params.get("multi")).toBe("1");
+    expect(parseLeadQuery(params).multiAgency).toBe(true);
+    expect(parseLeadQuery(new URLSearchParams("")).multiAgency).toBe(false);
   });
 });

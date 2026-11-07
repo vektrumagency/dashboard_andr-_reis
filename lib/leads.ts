@@ -1,4 +1,5 @@
-import { Lead, LeadPriority, LeadStatus, MarketId } from "./types";
+import { ActiveMarketId, Lead, LeadPriority, LeadStatus, MarketId } from "./types";
+import { MARKET_ZONES, activeMarketOf } from "./zones";
 
 const SELLER_LABELS: Record<Lead["seller"]["type"], string> = {
   private: "Particular",
@@ -24,10 +25,20 @@ export const PRIORITY_LABELS: Record<LeadPriority, string> = {
 };
 
 export const MARKET_LABELS: Record<MarketId, string> = {
+  lisboa: "Lisboa",
   cascais: "Cascais",
-  belem_restelo: "Belém/Restelo",
-  alges_arredores: "Algés/Miraflores",
+  oeiras: "Oeiras",
+  amadora: "Amadora",
+  // Históricos — os leads antigos destes mercados aparecem dentro de Lisboa e Oeiras.
+  belem_restelo: "Belém/Restelo (histórico)",
+  alges_arredores: "Algés/Miraflores (histórico)",
 };
+
+/** Nome do mercado para um id que o backend possa ter escrito e que ainda não conhecemos. */
+export function marketLabel(market: string | null | undefined): string {
+  if (!market) return "Mercado por confirmar";
+  return MARKET_LABELS[market as MarketId] ?? market;
+}
 
 const MARKET_POSITION_LABELS: Record<string, string> = {
   below_market: "Abaixo do mercado",
@@ -73,10 +84,14 @@ export const PIPELINE_STATUSES: Exclude<LeadStatus, "locating">[] = [
 
 export const ALL_PRIORITIES: LeadPriority[] = ["high", "medium", "low", "exclude"];
 
-/** Nomes dos mercados presentes nos leads, para usar em texto ("N leads em X"). */
+/**
+ * Nomes dos mercados presentes nos leads, para usar em texto ("N leads em X").
+ * Leads históricos contam para o mercado activo que os absorveu, para o
+ * texto não dizer "Lisboa e Belém/Restelo".
+ */
 export function marketsSummary(leads: Lead[]): string {
-  const present = Array.from(new Set(leads.map((lead) => lead.market)));
-  const labels = present.map((market) => MARKET_LABELS[market] ?? market);
+  const present = Array.from(new Set(leads.map((lead) => activeMarketOf(lead.market) ?? lead.market)));
+  const labels = present.map((market) => marketLabel(market));
   if (labels.length === 0) return "";
   if (labels.length === 1) return labels[0];
   return `${labels.slice(0, -1).join(", ")} e ${labels[labels.length - 1]}`;
@@ -91,6 +106,87 @@ export function uniqueZones(leads: Lead[]): string[] {
   return Array.from(
     new Set(leads.map((lead) => lead.property.zone).filter((zone): zone is string => !!zone)),
   ).sort();
+}
+
+/**
+ * Zonas para o filtro quando há um mercado escolhido: as zonas conhecidas
+ * desse mercado que têm leads, mais qualquer outra zona que os leads desse
+ * mercado tragam. Sem mercado (ALL), devolve todas as zonas presentes.
+ */
+export function zonesForMarket(leads: Lead[], market: ActiveMarketId | null): string[] {
+  if (!market) return uniqueZones(leads);
+  const inMarket = leads.filter((lead) => activeMarketOf(lead.market) === market);
+  const present = new Set(uniqueZones(inMarket));
+  const known = MARKET_ZONES[market].filter((zone) => present.has(zone));
+  const extra = Array.from(present).filter((zone) => !known.includes(zone)).sort();
+  return [...known, ...extra];
+}
+
+export interface MultiAgencyInfo {
+  /** Agências distintas que anunciam o imóvel, incluindo a do próprio anúncio. */
+  agencies: string[];
+  /** Número de agências — pode ser maior que `agencies.length` quando o backend só dá a contagem. */
+  agencyCount: number;
+  /** Número de anúncios do mesmo imóvel (este incluído). */
+  listingCount: number;
+}
+
+/**
+ * Lead multi-agência confirmado: o mesmo imóvel anunciado por 2+ agências.
+ * Fonte principal: `multi_agency_detection.status === "confirmed"`. Também
+ * aceita os campos de cluster (`cluster_kind`, `property_cluster`), que o
+ * backend está a introduzir. Devolve null para tudo o que não é confirmado
+ * — "provável" ou "sem indícios" nunca contam para o filtro nem para a ordem.
+ */
+export function multiAgencyInfo(lead: Lead): MultiAgencyInfo | null {
+  const detection = lead.multi_agency_detection;
+  const cluster = lead.property_cluster;
+  const confirmed =
+    detection?.status === "confirmed" ||
+    detection?.cluster_kind === "multi_agency" ||
+    cluster?.kind === "multi_agency";
+  if (!confirmed) return null;
+
+  const names = [
+    lead.seller.type === "agency" ? lead.seller.agency_name : null,
+    ...(detection?.matched_agencies ?? []),
+    ...(cluster?.agencies ?? []),
+  ];
+  const seen = new Set<string>();
+  const agencies: string[] = [];
+  for (const name of names) {
+    const trimmed = name?.trim();
+    if (!trimmed) continue;
+    const key = normalize(trimmed);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    agencies.push(trimmed);
+  }
+
+  return {
+    agencies,
+    agencyCount: Math.max(
+      agencies.length,
+      detection?.cluster_advertiser_count ?? 0,
+      cluster?.advertiser_count ?? 0,
+      // Confirmado = 2+ anunciantes distintos. Se este anúncio é de uma agência
+      // sem nome conhecido, ainda assim são pelo menos 2 agências; se é de um
+      // particular, só contamos as agências que conhecemos.
+      lead.seller.type === "private" ? 1 : 2,
+    ),
+    listingCount: Math.max(
+      // Os matched_listing_ids são os OUTROS anúncios; +1 para este.
+      detection?.matched_listing_ids?.length ? detection.matched_listing_ids.length + 1 : 0,
+      cluster?.listing_ids?.length ?? 0,
+      detection?.cluster_listing_count ?? 0,
+      cluster?.listing_count ?? 0,
+      2,
+    ),
+  };
+}
+
+export function isMultiAgency(lead: Lead): boolean {
+  return multiAgencyInfo(lead) !== null;
 }
 
 export function uniqueTypologies(leads: Lead[]): string[] {

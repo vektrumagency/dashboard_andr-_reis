@@ -1,6 +1,8 @@
 "use client";
 
-import { ALL_PRIORITIES, PRIORITY_LABELS, STATUS_LABELS, ALL_STATUSES } from "@/lib/leads";
+import { Building2 } from "lucide-react";
+import { ALL_PRIORITIES, MARKET_LABELS, PRIORITY_LABELS, STATUS_LABELS, ALL_STATUSES } from "@/lib/leads";
+import { ACTIVE_MARKETS } from "@/lib/zones";
 import { ALL, LeadQuery } from "@/lib/leadQuery";
 import { LeadSearch } from "./LeadSearch";
 
@@ -25,7 +27,28 @@ export function LeadFilters({
       <LeadSearch value={query.q} onChange={(q) => onChange({ q })} />
       <div className="flex flex-wrap items-end gap-3">
         <StatusChips value={query.status} onChange={(status) => onChange({ status })} />
+        <button
+          type="button"
+          aria-pressed={query.multiAgency}
+          onClick={() => onChange({ multiAgency: !query.multiAgency })}
+          title="Só imóveis anunciados por 2 ou mais agências"
+          className={`inline-flex items-center gap-1.5 rounded-pill px-3 py-1.5 text-xs font-medium transition-colors ${
+            query.multiAgency
+              ? "bg-accent text-on-accent"
+              : "border border-line-strong text-ink-muted hover:bg-surface-hover hover:text-ink"
+          }`}
+        >
+          <Building2 size={14} strokeWidth={2} />
+          Multi-agência
+        </button>
         <div className="ml-auto flex flex-wrap gap-3">
+          <Filter
+            label="Mercado"
+            value={query.market}
+            onChange={(market) => onChange({ market: market as LeadQuery["market"] })}
+            options={ACTIVE_MARKETS}
+            labels={MARKET_LABELS}
+          />
           <Filter label="Zona" value={query.zone} onChange={(zone) => onChange({ zone })} options={zones} />
           <Filter
             label="Prioridade"
@@ -89,7 +112,7 @@ function Filter<T extends string>({
   value: string;
   onChange: (value: string) => void;
   options: T[];
-  labels?: Record<T, string>;
+  labels?: Partial<Record<T, string>>;
 }) {
   return (
     <label className="flex flex-col gap-1 text-xs font-medium text-ink-muted">
@@ -102,7 +125,7 @@ function Filter<T extends string>({
         <option value={ALL}>{ALL}</option>
         {options.map((option) => (
           <option key={option} value={option}>
-            {labels ? labels[option] : option}
+            {labels?.[option] ?? option}
           </option>
         ))}
       </select>

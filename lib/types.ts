@@ -13,6 +13,7 @@ import {
   LocationIntelligence,
   MarketAdjustment,
   MultiAgencyDetection,
+  PropertyCluster,
   PropertyIdentity,
   PropertyIntelligence,
   QualitativeFactor,
@@ -21,7 +22,16 @@ import {
   VisualAuthenticityShadow,
 } from "./types/analysis";
 
-export type MarketId = "cascais" | "belem_restelo" | "alges_arredores";
+/** Mercados com pesquisa activa (ver lead-researcher/markets.yaml). */
+export type ActiveMarketId = "lisboa" | "cascais" | "oeiras" | "amadora";
+
+/**
+ * `belem_restelo` e `alges_arredores` são históricos: já não recebem
+ * pesquisa nova, mas os leads antigos continuam na Mongo e legíveis.
+ */
+export type HistoricalMarketId = "belem_restelo" | "alges_arredores";
+
+export type MarketId = ActiveMarketId | HistoricalMarketId;
 
 export type LeadStatus = "new" | "saved" | "contacted" | "visit" | "locating" | "not_relevant";
 
@@ -220,6 +230,12 @@ export interface Lead {
   property_intelligence?: PropertyIntelligence | null;
   location_intelligence?: LocationIntelligence | null;
   multi_agency_detection?: MultiAgencyDetection | null;
+  /**
+   * Cluster de anúncios do mesmo imóvel no inventário inteiro — o backend
+   * pode passar a escrevê-lo como objecto próprio. Opcional: hoje os campos
+   * de cluster vivem dentro de `multi_agency_detection` (cluster_kind, ...).
+   */
+  property_cluster?: PropertyCluster | null;
   research_meta?: ResearchMeta | null;
   property_identity?: PropertyIdentity | null;
 }
